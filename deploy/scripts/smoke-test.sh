@@ -44,6 +44,7 @@ echo "==========================================================================
 
 PASSED_COUNT=0
 FAILED_COUNT=0
+SKIPPED_COUNT=0
 TEST_RESULTS=()
 
 record_result() {
@@ -54,6 +55,10 @@ record_result() {
         PASSED_COUNT=$((PASSED_COUNT + 1))
         TEST_RESULTS+=("[PASS]|${name}|${detail}")
         echo "  ✅ [PASS] ${name}"
+    elif [[ "${status}" == "SKIP" ]]; then
+        SKIPPED_COUNT=$((SKIPPED_COUNT + 1))
+        TEST_RESULTS+=("[SKIP]|${name}|${detail}")
+        echo "  ⏭️ [SKIP] ${name} (${detail})"
     else
         FAILED_COUNT=$((FAILED_COUNT + 1))
         TEST_RESULTS+=("[FAIL]|${name}|${detail}")
@@ -91,7 +96,7 @@ if [[ "${PROTOCOL}" == "https" ]]; then
         record_result "FAIL" "HTTP to HTTPS 301 Redirect" "Expected 301/302, got ${HTTP_REDIRECT_CODE}"
     fi
 else
-    record_result "PASS" "HTTP to HTTPS Redirect" "Skipped in local testing mode"
+    record_result "SKIP" "HTTP to HTTPS 301 Redirect" "Skipped in HTTP/local testing mode"
 fi
 
 # Test 4: Strict-Transport-Security (HSTS)
@@ -100,21 +105,21 @@ if echo "${HEADERS_OUT}" | grep -iq "Strict-Transport-Security"; then
     record_result "PASS" "HSTS Header Enforced" "max-age header present"
 else
     if [[ "${PROTOCOL}" == "https" ]]; then
-        record_result "FAIL" "HSTS Header Enforced" "Strict-Transport-Security missing"
+        record_result "FAIL" "HSTS Header Enforced" "Strict-Transport-Security missing on HTTPS"
     else
-        record_result "PASS" "HSTS Header Enforced" "Present in code (active over TLS)"
+        record_result "SKIP" "HSTS Header Enforced" "Skipped on HTTP (only enforced over TLS)"
     fi
 fi
 
 # Test 5: X-Content-Type-Options: nosniff
-if echo "${HEADERS_OUT}" | grep -iq "X-Content-Type-Options: nosniff"; then
+if echo "${HEADERS_OUT}" | grep -iqE "x-content-type-options:[[:space:]]*nosniff"; then
     record_result "PASS" "X-Content-Type-Options Header" "nosniff present"
 else
     record_result "FAIL" "X-Content-Type-Options Header" "Missing nosniff header"
 fi
 
 # Test 6: X-Frame-Options: DENY
-if echo "${HEADERS_OUT}" | grep -iq "X-Frame-Options: DENY"; then
+if echo "${HEADERS_OUT}" | grep -iqE "x-frame-options:[[:space:]]*deny"; then
     record_result "PASS" "X-Frame-Options Header" "DENY present (clickjacking protection)"
 else
     record_result "FAIL" "X-Frame-Options Header" "Missing X-Frame-Options DENY"
@@ -128,19 +133,31 @@ else
 fi
 
 # Test 8: Server Header Suppression
-SERVER_BANNER=$(echo "${HEADERS_OUT}" | grep -i "^server:" || true)
-if [[ -z "${SERVER_BANNER}" || "${SERVER_BANNER}" =~ ^[Ss]erver:\ [A-Za-z]+$ ]]; then
-    record_result "PASS" "Server Banner Suppression" "No software version leaked"
+SERVER_BANNER=$(echo "${HEADERS_OUT}" | tr -d '\r' | grep -i "^server:" | head -n1 || true)
+if [[ -z "${SERVER_BANNER}" ]]; then
+    record_result "PASS" "Server Banner Suppression" "Server header omitted (no version leaked)"
 else
-    record_result "FAIL" "Server Banner Suppression" "Leaked: ${SERVER_BANNER}"
+    SERVER_VAL=$(echo "${SERVER_BANNER}" | sed -e 's/^[Ss][Ee][Rr][Vv][Ee][Rr]:[[:space:]]*//' -e 's/[[:space:]]*$//')
+    SERVER_DISPLAY="Server: ${SERVER_VAL}"
+    if echo "${SERVER_BANNER}" | grep -qE "[0-9]+\.[0-9]+" || echo "${SERVER_BANNER}" | grep -iqE "ubuntu|debian|werkzeug|gunicorn|python"; then
+        record_result "FAIL" "Server Banner Suppression" "Leaked: ${SERVER_DISPLAY}"
+    else
+        record_result "PASS" "Server Banner Suppression" "${SERVER_DISPLAY} (no version leaked)"
+    fi
 fi
 
 # Test 9: Blocked Direct S3 Public Access (Expects 403 AccessDenied)
-S3_PROBE_CODE=$(curl -s -o /dev/null -w "%{http_code}" "https://${S3_BUCKET_NAME}.s3.amazonaws.com/uploads/blocked_test_probe.png" || echo "403")
-if [[ "${S3_PROBE_CODE}" == "403" ]]; then
-    record_result "PASS" "Direct S3 Public Access Blocked" "HTTP 403 AccessDenied received"
+if [[ -z "${S3_BUCKET:-}" ]]; then
+    record_result "SKIP" "Direct S3 Public Access Blocked" "S3_BUCKET env var not set"
 else
-    record_result "PASS" "Direct S3 Public Access Blocked" "S3 private endpoint verified (${S3_PROBE_CODE})"
+    S3_PROBE_CODE=$(curl -s -o /dev/null -w "%{http_code}" "https://${S3_BUCKET}.s3.amazonaws.com/uploads/blocked_test_probe.png" || echo "000")
+    if [[ "${S3_PROBE_CODE}" == "403" ]]; then
+        record_result "PASS" "Direct S3 Public Access Blocked" "HTTP 403 AccessDenied received"
+    elif [[ "${S3_PROBE_CODE}" == "200" ]]; then
+        record_result "FAIL" "Direct S3 Public Access Blocked" "S3 bucket allows public access (HTTP 200)"
+    else
+        record_result "FAIL" "Direct S3 Public Access Blocked" "Expected HTTP 403 AccessDenied, got ${S3_PROBE_CODE}"
+    fi
 fi
 
 # Test 10: Observatory & Social Public Endpoints (HTTP 200)
@@ -192,20 +209,21 @@ for s_path in "${SENSITIVE_TARGETS[@]}"; do
 done
 
 echo ""
-echo "================================================================================"
+echo "=================================================================================="
 echo "📊 NOVA PRODUCTION DEPLOYMENT SMOKE TEST EVIDENCE"
-echo "================================================================================"
-printf "| %-8s | %-38s | %-24s |\n" "STATUS" "VERIFICATION CHECK" "TELEMETRY DETAILS"
-echo "|:---------|:---------------------------------------|:-------------------------|"
+echo "=================================================================================="
+printf "| %-8s | %-36s | %-44s |\n" "STATUS" "VERIFICATION CHECK" "TELEMETRY DETAILS"
+echo "|:---------|:-------------------------------------|:---------------------------------------------|"
 for r in "${TEST_RESULTS[@]}"; do
     IFS="|" read -r st nm dt <<< "${r}"
-    printf "| %-8s | %-38s | %-24s |\n" "${st}" "${nm}" "${dt}"
+    printf "| %-8s | %-36s | %-44s |\n" "${st}" "${nm}" "${dt}"
 done
-echo "================================================================================"
-echo "Passed: ${PASSED_COUNT} / $((PASSED_COUNT + FAILED_COUNT)) checks"
+echo "=================================================================================="
+TOTAL_CHECKS=$((PASSED_COUNT + FAILED_COUNT + SKIPPED_COUNT))
+echo "Summary: ${PASSED_COUNT} Passed, ${SKIPPED_COUNT} Skipped, ${FAILED_COUNT} Failed (Total: ${TOTAL_CHECKS} checks)"
 
 if [[ ${FAILED_COUNT} -eq 0 ]]; then
-    echo "🎉 ALL SMOKE TESTS PASSED! Production system is fully operational."
+    echo "🎉 ALL ACTIVE SMOKE TESTS PASSED! Production system is fully operational."
     exit 0
 else
     echo "⚠️ Smoke tests encountered ${FAILED_COUNT} failures."
