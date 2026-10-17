@@ -10,12 +10,12 @@
         "s3:DeleteObject"
       ],
       "Resource": [
-        "arn:aws:s3:::YOUR_BUCKET_NAME/uploads/*",
-        "arn:aws:s3:::YOUR_BUCKET_NAME/avatars/*",
-        "arn:aws:s3:::YOUR_BUCKET_NAME/banners/*",
-        "arn:aws:s3:::YOUR_BUCKET_NAME/agencies/*",
-        "arn:aws:s3:::YOUR_BUCKET_NAME/outreach/*",
-        "arn:aws:s3:::YOUR_BUCKET_NAME/backups/*"
+        "arn:aws:s3:::amzn-nova-deploy/uploads/*",
+        "arn:aws:s3:::amzn-nova-deploy/avatars/*",
+        "arn:aws:s3:::amzn-nova-deploy/banners/*",
+        "arn:aws:s3:::amzn-nova-deploy/agencies/*",
+        "arn:aws:s3:::amzn-nova-deploy/outreach/*",
+        "arn:aws:s3:::amzn-nova-deploy/backups/*"
       ]
     },
     {
@@ -25,7 +25,7 @@
         "s3:ListBucket",
         "s3:GetBucketLocation"
       ],
-      "Resource": "arn:aws:s3:::YOUR_BUCKET_NAME",
+      "Resource": "arn:aws:s3:::amzn-nova-deploy",
       "Condition": {
         "StringLike": {
           "s3:prefix": [
@@ -71,7 +71,7 @@
         "ses:SendEmail",
         "ses:SendRawEmail"
       ],
-      "Resource": "arn:aws:ses:us-east-1:YOUR_ACCOUNT_ID:identity/*"
+      "Resource": "arn:aws:ses:us-east-1:610156625955:identity/*"
     }
   ]
 }

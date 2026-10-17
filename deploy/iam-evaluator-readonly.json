@@ -28,8 +28,8 @@
         "s3:GetObject"
       ],
       "Resource": [
-        "arn:aws:s3:::YOUR_BUCKET_NAME",
-        "arn:aws:s3:::YOUR_BUCKET_NAME/*"
+        "arn:aws:s3:::amzn-nova-deploy",
+        "arn:aws:s3:::amzn-nova-deploy/*"
       ]
     },
     {

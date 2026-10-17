@@ -8,8 +8,8 @@
       "Principal": "*",
       "Action": "s3:*",
       "Resource": [
-        "arn:aws:s3:::YOUR_BUCKET_NAME",
-        "arn:aws:s3:::YOUR_BUCKET_NAME/*"
+        "arn:aws:s3:::amzn-nova-deploy",
+        "arn:aws:s3:::amzn-nova-deploy/*"
       ],
       "Condition": {
         "Bool": {
@@ -22,7 +22,7 @@
       "Effect": "Deny",
       "Principal": "*",
       "Action": "s3:PutObject",
-      "Resource": "arn:aws:s3:::YOUR_BUCKET_NAME/*",
+      "Resource": "arn:aws:s3:::amzn-nova-deploy/*",
       "Condition": {
         "StringNotEquals": {
           "s3:x-amz-server-side-encryption": "AES256"
@@ -33,7 +33,7 @@
       "Sid": "ExplicitAllowForEC2ServerRoleOnly",
       "Effect": "Allow",
       "Principal": {
-        "AWS": "arn:aws:iam::YOUR_ACCOUNT_ID:role/NovaEC2ServerRole"
+        "AWS": "arn:aws:iam::610156625955:role/NovaEC2ServerRole"
       },
       "Action": [
         "s3:PutObject",
@@ -41,12 +41,12 @@
         "s3:DeleteObject"
       ],
       "Resource": [
-        "arn:aws:s3:::YOUR_BUCKET_NAME/uploads/*",
-        "arn:aws:s3:::YOUR_BUCKET_NAME/avatars/*",
-        "arn:aws:s3:::YOUR_BUCKET_NAME/banners/*",
-        "arn:aws:s3:::YOUR_BUCKET_NAME/agencies/*",
-        "arn:aws:s3:::YOUR_BUCKET_NAME/outreach/*",
-        "arn:aws:s3:::YOUR_BUCKET_NAME/backups/*"
+        "arn:aws:s3:::amzn-nova-deploy/uploads/*",
+        "arn:aws:s3:::amzn-nova-deploy/avatars/*",
+        "arn:aws:s3:::amzn-nova-deploy/banners/*",
+        "arn:aws:s3:::amzn-nova-deploy/agencies/*",
+        "arn:aws:s3:::amzn-nova-deploy/outreach/*",
+        "arn:aws:s3:::amzn-nova-deploy/backups/*"
       ]
     }
   ]

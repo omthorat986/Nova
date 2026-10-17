@@ -17,7 +17,7 @@
       "ComparisonOperator": "GreaterThanThreshold",
       "Statistic": "Average",
       "AlarmActions": [
-        "arn:aws:sns:us-east-1:YOUR_ACCOUNT_ID:nova-alerts-topic"
+        "arn:aws:sns:us-east-1:610156625955:nova-alerts-topic"
       ]
     },
     {
@@ -37,7 +37,7 @@
       "ComparisonOperator": "GreaterThanThreshold",
       "Statistic": "Maximum",
       "AlarmActions": [
-        "arn:aws:sns:us-east-1:YOUR_ACCOUNT_ID:nova-alerts-topic"
+        "arn:aws:sns:us-east-1:610156625955:nova-alerts-topic"
       ]
     },
     {
@@ -61,7 +61,7 @@
       "ComparisonOperator": "GreaterThanThreshold",
       "Statistic": "Average",
       "AlarmActions": [
-        "arn:aws:sns:us-east-1:YOUR_ACCOUNT_ID:nova-alerts-topic"
+        "arn:aws:sns:us-east-1:610156625955:nova-alerts-topic"
       ]
     },
     {
@@ -81,7 +81,7 @@
       "ComparisonOperator": "GreaterThanThreshold",
       "Statistic": "Average",
       "AlarmActions": [
-        "arn:aws:sns:us-east-1:YOUR_ACCOUNT_ID:nova-alerts-topic"
+        "arn:aws:sns:us-east-1:610156625955:nova-alerts-topic"
       ]
     },
     {
@@ -95,7 +95,7 @@
       "ComparisonOperator": "GreaterThanOrEqualToThreshold",
       "Statistic": "Sum",
       "AlarmActions": [
-        "arn:aws:sns:us-east-1:YOUR_ACCOUNT_ID:nova-alerts-topic"
+        "arn:aws:sns:us-east-1:610156625955:nova-alerts-topic"
       ]
     }
   ]
