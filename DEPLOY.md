@@ -19,13 +19,15 @@ A step-by-step, copy-paste friendly manual for provisioning, hardening, and runn
 12. [Environment Configuration (/etc/nova/nova.env)](#12-environment-configuration-etcnovanovaenv)
 13. [Database Migrations & Initial Curator Creation](#13-database-migrations--initial-curator-creation)
 14. [Starting the Systemd Service Daemon](#14-starting-the-systemd-service-daemon)
-15. [Nginx Reverse Proxy & Certbot TLS/HTTPS](#15-nginx-reverse-proxy--certbot-tlshttps)
+15. [Nginx Reverse Proxy, Certbot TLS & Hardening](#15-working-https-bootstrap-order--nginx-configuration)
 16. [CloudWatch Agent, Telemetry & Alarms](#16-cloudwatch-agent-telemetry--alarms)
 17. [Smoke Testing & Live Evidence Verification](#17-smoke-testing--live-evidence-verification)
 18. [Automated Backups & Disaster Recovery](#18-automated-backups--disaster-recovery)
-19. [Zero-Downtime Releases & Instant Rollback](#19-zero-downtime-releases--instant-rollback)
-20. [Troubleshooting Guide (502, AccessDenied, 413, SSL)](#20-troubleshooting-guide)
-21. [Cost Estimation & Complete Teardown Guide](#21-cost-estimation--complete-teardown-guide)
+19. [Production Fast-Forward Updates (update-nova.sh)](#19-production-fast-forward-updates-deployscriptsupdate-novash)
+20. [Multi-Worker Rate Limiting & Concurrency Architecture](#20-multi-worker-rate-limiting--concurrency-architecture)
+21. [Deployment Challenges & Solutions (Real-World Incident Log)](#21-deployment-challenges--solutions-real-world-incident-log)
+22. [Troubleshooting Guide (502, AccessDenied, 413, SSL)](#22-troubleshooting-guide)
+23. [Cost Estimation & Complete Teardown Guide](#23-cost-estimation--complete-teardown-guide)
 
 ---
 
@@ -312,9 +314,12 @@ The bootstrap script automatically:
 - Installs Nginx, Python 3.11+, pip, venv, SQLite3, Certbot.
 - Allocates a 1 GB swap file (preventing memory pressure on t3.micro).
 - Enables automatic security updates.
-- Creates system user `nova` and base directory `/opt/nova` (`chmod 750`).
+- Creates system user `nova` and base directory `/opt/nova` (`chmod 750`, owner `nova:nova`).
+- Creates secure application directories `/opt/nova/logs` and database directory `/var/lib/nova` (`chmod 750`, owner `nova:nova`).
+- Adds web server user (`www-data` or `nginx`) to group `nova` so Nginx can traverse and serve static files directly.
+- Disables host-level UFW commands in favor of AWS EC2 Security Groups (avoiding kernel iptables syntax failures and SSH lockout risk).
 - Initializes a dedicated virtual environment at `/opt/nova/venv`.
-- Installs the AWS CloudWatch Agent.
+- Installs the AWS CloudWatch Agent and adds `cwagent` to the `nova` and `adm` groups for application and system log streaming.
 
 ---
 
@@ -330,6 +335,13 @@ sudo git clone -b deploy-ready https://github.com/YOUR_USER/YOUR_REPO.git /opt/n
 # Set ownership and permissions
 sudo chown -R nova:nova /opt/nova
 sudo chmod 750 /opt/nova
+sudo mkdir -p /opt/nova/logs /var/lib/nova
+sudo chmod 750 /opt/nova/logs /var/lib/nova
+sudo chown -R nova:nova /opt/nova/logs /var/lib/nova
+
+# Ensure www-data and cwagent have required group access
+sudo usermod -a -G nova www-data
+sudo usermod -a -G nova,adm cwagent 2>/dev/null || true
 
 # Install Python production dependencies into the virtualenv
 sudo -u nova /opt/nova/venv/bin/pip install --upgrade pip
@@ -447,6 +459,30 @@ sudo nginx -t
 sudo systemctl enable --now nginx
 ```
 
+### Nginx Hardening & Static Asset Policies
+The production `deploy/nginx.conf` implements the following defenses:
+1. **Preemptive Regex Deny Rules (Evaluated First)**:
+   ```nginx
+   location ~* \.(db|db-wal|db-shm|sqlite3?|log|py|sql|env|pem|key|bak|orig)$ { return 404; }
+   location ~ /\. { return 404; }
+   location ^~ /deploy/ { return 404; }
+   location ^~ /logs/ { return 404; }
+   location = /requirements.txt { return 404; }
+   ```
+   Blocks any direct HTTP probe for databases, application source code, `.env` files, logs, or deploy configs before any static rule is reached.
+2. **Strict `/data/` Directory Restriction**:
+   ```nginx
+   location ~* ^/data/.*\.js$ { ... try_files $uri =404; }
+   location /data/ { return 404; }
+   ```
+   Ensures the `/data/` path *only* serves static JavaScript tables (`galaxies.js`, `planets.js`, etc.) and rejects any other file or traversal attempt.
+3. **Static File Cache Busting Strategy**:
+   - `/css` and `/js` assets are cached for 5 minutes with mandatory browser revalidation:
+     `Cache-Control: public, max-age=300, must-revalidate`
+     This ensures visitors receive newly deployed CSS and JS within minutes of an update without needing URL hashes in HTML.
+   - Images and fonts retain 30-day immutable caching:
+     `Cache-Control: public, max-age=2592000, immutable`
+
 ---
 
 ## 16. CloudWatch Agent, Telemetry & Alarms
@@ -547,7 +583,34 @@ sudo bash /opt/nova/deploy/scripts/restore.sh
 
 ---
 
-## 19. Multi-Worker Rate Limiting & Concurrency Architecture
+## 19. Production Fast-Forward Updates (`deploy/scripts/update-nova.sh`)
+
+To update a live EC2 production instance with zero configuration drift and verified health:
+
+```bash
+# Execute the update pipeline on EC2
+sudo bash /opt/nova/deploy/scripts/update-nova.sh
+```
+
+The script automates the complete maintenance workflow:
+1. **`git pull --ff-only`**: Pulls latest commits without creating merge commits or detached states.
+2. **`rsync -av --delete`**: Synchronizes repository files into `/opt/nova` while strictly preserving production artifacts:
+   - Excludes `.git`, `venv`, `logs`, `.env`, and `*.db*`.
+3. **Hardened File Permissions**:
+   - Re-applies `chown -R nova:nova /opt/nova /var/lib/nova`.
+   - Enforces `chmod 750 /opt/nova /var/lib/nova /opt/nova/logs`.
+4. **Dependency Installation**:
+   - Updates pip and dependencies via `/opt/nova/venv/bin/pip install -r requirements.txt`.
+5. **Database Migrations**:
+   - Executes `python3 manage.py migrate` to apply any pending schema migrations.
+6. **Daemon Restart & Health Probe**:
+   - Restarts `nova.service` via systemd.
+   - Waits 2 seconds for worker socket binding.
+   - Executes `curl http://127.0.0.1:8080/ready` to assert that database and storage subsystems are fully online before concluding.
+
+---
+
+## 20. Multi-Worker Rate Limiting & Concurrency Architecture
 
 ### Storage & Concurrency Model
 1. **In-Memory Sliding Window**: The application's `SlidingWindowLimiter` in `server.py` tracks rate limits (5 failed logins per 15 min, 5 avatar uploads per hour) in memory with thread locks.
@@ -559,7 +622,49 @@ sudo bash /opt/nova/deploy/scripts/restore.sh
 
 ---
 
-## 20. Troubleshooting Guide
+## 21. Deployment Challenges & Solutions (Real-World Incident Log)
+
+During production provisioning, cloud hardening, and verification on AWS EC2/S3, several critical real-world infrastructure challenges were identified and engineered to resolution:
+
+### 1. AWS Account Verification Delay
+- **Incident**: New AWS accounts experience an automated security verification and service activation period (up to 24 hours). During this window, requests to allocate Elastic IPs, launch certain EC2 instance types, or create S3 buckets returned `PendingVerification` or API rate caps.
+- **Root Cause**: AWS fraud prevention mechanisms throttle newly created accounts until payment method verification and account validation complete globally.
+- **Solution**: Account initialization must be planned ahead of deployment deadlines. Use `aws sts get-caller-identity` to verify account status, verify payment credentials in Billing Console, and run dry-run commands (`aws ec2 run-instances --dry-run`) to validate quota availability before running automation.
+
+### 2. Host UFW Syntax Failure & SSH Lockout Risk
+- **Incident**: Executing automated UFW configuration commands (such as `ufw allow 80/tcp` and `ufw enable`) inside cloud bootstrap scripts failed with syntax errors or module loading errors on minimal cloud Linux kernels (e.g., missing `nf_tables` modules). Furthermore, improperly ordered UFW commands presented a severe risk of permanently locking out SSH terminal access.
+- **Root Cause**: Minimal cloud AMIs often do not bundle full iptables/UFW kernel modules by default. Moreover, managing host-level firewalls alongside cloud security groups introduces duplicate, conflicting packet filtering rules.
+- **Solution**: Explicitly disabled host-level UFW commands in `bootstrap-ec2.sh`. The AWS EC2 Security Group acts as the authoritative, hardware-virtualized stateful packet filter at the hypervisor boundary (restricting ingress strictly to ports 22, 80, and 443). Eliminating host UFW removes the syntax failure point and ensures uninterrupted SSH connectivity.
+
+### 3. Nginx Permission Denied (HTTP 403) on Static Files
+- **Incident**: After deploying code to `/opt/nova` and securing the directory with `chmod 750` under owner `nova:nova`, Nginx returned HTTP 403 Forbidden errors when attempting to serve static files (`/css/style.css`, `/js/app.js`).
+- **Root Cause**: Nginx worker processes run under user `www-data` (or `nginx` on RHEL/Amazon Linux). Because `/opt/nova` permissions were `rwxr-x---` (750), user `www-data` had no read or execute (directory traversal) permissions on `/opt/nova`.
+- **Solution**: Added the web server user to the `nova` system group (`usermod -a -G nova www-data`). Mode `750` permits group members full read and directory traversal rights (`r-x`), allowing Nginx to serve static files with maximum throughput without requiring insecure world-readable (`777` or `755`) permissions.
+
+### 4. Database Exposed Under `/data/` and Relocation to `/var/lib/nova`
+- **Incident**: The local development configuration stored the SQLite database at `./data/nova.db`. However, the repository also contained a public `/data/` folder used for static JavaScript tables (`galaxies.js`, `missions.js`). Consequently, Nginx mapped requests for `/data/nova.db` directly to the SQLite database file on disk, exposing sensitive user hashes and tokens to unauthenticated HTTP downloads.
+- **Root Cause**: Overlapping directory naming between the static web root (`/data/`) and local database storage.
+- **Solution**: 
+  1. Relocated the production SQLite database entirely outside the Nginx web root to `/var/lib/nova/nova.db`, with filesystem mode `750` and ownership restricted to `nova:nova`.
+  2. Updated `deploy/nova.service` to sandbox write access via `ReadWritePaths=/var/lib/nova /opt/nova/logs -/opt/nova/local_uploads`.
+  3. Added preemptive Nginx deny rules before all static blocks:
+     `location ~* \.(db|db-wal|db-shm|sqlite3?|log|py|sql|env|pem|key|bak|orig)$ { return 404; }`
+     `location ~ /\. { return 404; }`
+  4. Restricted `/data/` in both Nginx and Flask to strictly serve only `*.js` files (`location ~* ^/data/.*\.js$`), returning 404 for any other extension or directory probe.
+
+### 5. `head_bucket` HTTP 403 Caused by Prefix-Limited IAM
+- **Incident**: The application `/ready` health probe intermittently reported storage subsystem failures with `botocore.exceptions.ClientError: An error occurred (403) when calling the HeadBucket operation: Forbidden`.
+- **Root Cause**: In adherence to the principle of least privilege, the EC2 IAM policy (`iam-policy-ec2-role.json`) restricted `s3:ListBucket` permissions strictly to prefixed paths (`uploads/*`, `avatars/*`, `banners/*`, `agencies/*`, `outreach/*`, `backups/*`). Boto3's default `s3_client.head_bucket()` or root `list_objects_v2` calls inspect bucket existence at the root without a prefix, which AWS IAM evaluates as unauthorized, returning HTTP 403 AccessDenied.
+- **Solution**: Refactored the `/ready` probe in `server.py` to use `s3_client.list_objects_v2(Bucket=bucket, Prefix='uploads/', MaxKeys=1)`. This validates live S3 connectivity and bucket reachability against an authorized prefix, satisfying least-privilege IAM policies with zero permission errors.
+
+### 6. `is_curator` Schema Mismatch Bug
+- **Incident**: Execution of administrative CLI tools (`python manage.py create-curator`) and automated RBAC integration tests failed with database operational errors (`no such column: is_curator`).
+- **Root Cause**: Early development iterations used a boolean `is_curator` column flag in the `users` table, whereas production migration `001_initial_schema.sql` formally established role-based access control via a `role VARCHAR(20) DEFAULT 'user'` column with values `'curator'` and `'user'`.
+- **Solution**: Refactored `create_curator_cli()` and user creation routines in `server.py` to target the canonical `role` column (`role = 'curator'`), implemented strict password complexity validation (min 10 characters, common password blocklist, bcrypt hashing), and verified curator privilege isolation via automated self-tests across both CLI execution and protected API endpoints (`/moderation`, `/api/reports`).
+
+---
+
+## 22. Troubleshooting Guide
 
 | Issue | Root Cause | Resolution |
 | :--- | :--- | :--- |
@@ -568,11 +673,11 @@ sudo bash /opt/nova/deploy/scripts/restore.sh
 | **HTTP 413 Payload Too Large** | Upload exceeds Nginx or Gunicorn buffer limit | Confirm `client_max_body_size 6M;` in Nginx and `MAX_CONTENT_LENGTH = 5*1024*1024` in `server.py`. |
 | **Mixed Content Warning** | Browser loading assets over HTTP instead of HTTPS | Ensure `ProxyFix` is active in `server.py` and Nginx sends `X-Forwarded-Proto https;`. |
 | **Certbot Renewal Failure** | Port 80 closed in Security Group or ACME challenge blocked | Verify port 80 is open to 0.0.0.0/0 in AWS Security Group. Test renewal with `sudo certbot renew --dry-run`. |
-| **Permission Denied in Logs** | Systemd user `nova` cannot write to `/var/www/nova/shared` | Run `sudo chown -R nova:nova /var/www/nova` and ensure `chmod 750` on directories. |
+| **Permission Denied in Logs** | Systemd user `nova` cannot write to `/opt/nova/logs` | Run `sudo chown -R nova:nova /opt/nova/logs` and ensure `chmod 750` on directories. |
 
 ---
 
-## 21. Cost Estimation & Complete Teardown Guide
+## 23. Cost Estimation & Complete Teardown Guide
 
 ### Monthly Cost Estimation (AWS Free Tier)
 - **EC2 (t3.micro)**: 750 hours/month Free Tier eligible (**$0.00**).

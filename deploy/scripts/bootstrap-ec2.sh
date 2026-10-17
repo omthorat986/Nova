@@ -122,10 +122,15 @@ fi
 chmod 750 /opt/nova
 chown -R nova:nova /opt/nova
 
-# Secure production database directory outside Nginx web root
+# Ensure logs and database directories exist with explicit mode 750 and owner nova:nova
+mkdir -p /opt/nova/logs
+chmod 750 /opt/nova/logs
+chown -R nova:nova /opt/nova/logs
+
+mkdir -p /var/lib/nova
 chmod 750 /var/lib/nova
 chown -R nova:nova /var/lib/nova
-echo "✅ Production database directory /var/lib/nova secured (mode 750, owner nova:nova)."
+echo "✅ Directories /opt/nova/logs and /var/lib/nova secured (mode 750, owner nova:nova)."
 
 # Add Nginx user (www-data / nginx) to nova group for static asset traversal
 if id -u www-data &>/dev/null; then
@@ -137,7 +142,12 @@ elif id -u nginx &>/dev/null; then
 fi
 
 # 6. Firewall Configuration (Managed at AWS Security Group Level)
-echo "🛡️ [5/8] Firewall managed via AWS Security Group (ports 22, 80, 443). Skipping UFW configuration."
+# Note: Host UFW is disabled because AWS EC2 Security Groups serve as the primary stateful firewall.
+# Host-level UFW commands are intentionally commented out to prevent syntax failures and accidental lockouts:
+# ufw allow OpenSSH
+# ufw allow 'Nginx Full'
+# ufw --force enable
+echo "🛡️ [5/8] Firewall managed via AWS Security Group (ports 22, 80, 443). Host UFW is disabled."
 
 # 7. Install AWS CloudWatch Agent
 echo "📊 [6/8] Installing AWS CloudWatch Unified Agent..."
@@ -158,6 +168,12 @@ if ! command -v amazon-cloudwatch-agent-ctl &>/dev/null; then
     echo "✅ CloudWatch Agent installed."
 else
     echo "ℹ️ CloudWatch Agent already installed."
+fi
+
+# Add cwagent user to nova and adm groups so CloudWatch can read application and system logs
+if id -u cwagent &>/dev/null; then
+    usermod -a -G nova,adm cwagent || true
+    echo "✅ Added 'cwagent' to groups 'nova' and 'adm'."
 fi
 
 # 8. Create production environment file template if missing

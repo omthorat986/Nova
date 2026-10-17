@@ -155,26 +155,41 @@ else
     record_result "FAIL" "Public Routes Availability" "Index=${INDEX_CODE}, Social=${SOCIAL_CODE}, 404=${NOT_FOUND_CODE}"
 fi
 
-# Test 11: Direct Access to Sensitive Files Blocked (HTTP 403 or 404)
-SENSITIVE_FILES=("/data/nova.db" "/nova.db" "/server.py" "/.env" "/logs/app.log")
-ALL_SENSITIVE_BLOCKED=true
-SENSITIVE_DETAILS=""
+# Test 11: Static Asset Delivery (/css/style.css and /js/app.js return 200)
+CSS_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${BASE_URL}/css/style.css" || echo "000")
+if [[ "${CSS_CODE}" == "200" ]]; then
+    record_result "PASS" "Static Delivery: /css/style.css" "HTTP 200 OK"
+else
+    record_result "FAIL" "Static Delivery: /css/style.css" "HTTP ${CSS_CODE}"
+fi
 
-for s_path in "${SENSITIVE_FILES[@]}"; do
+JS_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${BASE_URL}/js/app.js" || echo "000")
+if [[ "${JS_CODE}" == "200" ]]; then
+    record_result "PASS" "Static Delivery: /js/app.js" "HTTP 200 OK"
+else
+    record_result "FAIL" "Static Delivery: /js/app.js" "HTTP ${JS_CODE}"
+fi
+
+# Test 12: Sensitive Files Direct Access Blocked (Expects HTTP 403 or 404)
+SENSITIVE_TARGETS=(
+    "/data/nova.db"
+    "/nova.db"
+    "/server.py"
+    "/manage.py"
+    "/.env"
+    "/requirements.txt"
+    "/logs/app.log"
+    "/deploy/nginx.conf"
+)
+
+for s_path in "${SENSITIVE_TARGETS[@]}"; do
     STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${BASE_URL}${s_path}" || echo "000")
     if [[ "${STATUS_CODE}" == "403" || "${STATUS_CODE}" == "404" ]]; then
-        SENSITIVE_DETAILS+="${s_path}=${STATUS_CODE} "
+        record_result "PASS" "Blocked Sensitive: ${s_path}" "HTTP ${STATUS_CODE} (Protected)"
     else
-        ALL_SENSITIVE_BLOCKED=false
-        SENSITIVE_DETAILS+="${s_path}=${STATUS_CODE}(LEAK) "
+        record_result "FAIL" "Blocked Sensitive: ${s_path}" "HTTP ${STATUS_CODE} (Leaked)"
     fi
 done
-
-if [[ "${ALL_SENSITIVE_BLOCKED}" == "true" ]]; then
-    record_result "PASS" "Sensitive Files Blocked" "${SENSITIVE_DETAILS}"
-else
-    record_result "FAIL" "Sensitive Files Blocked" "Unprotected: ${SENSITIVE_DETAILS}"
-fi
 
 echo ""
 echo "================================================================================"

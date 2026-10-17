@@ -17,9 +17,9 @@ NOVA is an astrophysical research observatory, celestial planetarium, and deep-s
                                │  - t3.micro (2 vCPU, 1 GB)  │
                                │  - IMDSv2 Enforced          │
                                │  - 1 GB Fast Swap Space     │
-                               │  - UFW Firewall (22, 80, 443)│
+                               │  - AWS SG (Ports 22, 80, 443)│
                                │                             │
-                               │   [ Nginx Reverse Proxy ]   │── (Direct Static: /css, /js, /data)
+                               │   [ Nginx Reverse Proxy ]   │── (Direct Static: /css, /js, /data/*.js only)
                                │     - SSL/TLS Termination   │
                                │     - 6 MB Buffer Limit     │
                                │     - HTTP -> HTTPS 301     │
@@ -106,13 +106,18 @@ The database is managed exclusively through numbered, idempotent SQL migrations 
 | **Cloud Credential Guard** | IAM Instance Profile with Default Credential Chain (0 keys in code) | Secret Leakage |
 | **SSRF Neutralization** | EC2 IMDSv2 mandatory (`HttpTokens=required`) | Metadata Exfiltration |
 | **Database Isolation** | `/var/lib/nova/nova.db` outside Nginx web root, owner `nova:nova`, mode `750` | Direct Database Download & Source Exposure |
+| **Preemptive Deny Rules** | Nginx regex returns 404 on `\.(db|log|py|env|pem|key|bak|orig)$`, dotfiles, `/deploy/`, `/logs/` | Source Code & Secret Exposure |
+| **Data Path Restriction** | `/data/` location restricted solely to `*.js` data tables; any other access returns 404 | Unauthorized Data File Probing |
+| **Process & Group Isolation** | `www-data` in `nova` group (mode 750); `cwagent` in `nova` & `adm` groups | Privilege Escalation & Access Denied |
+| **Network Perimeter Guard** | AWS Security Group stateful filtering (ports 22, 80, 443); host UFW disabled | Port Scanning & UFW Lockout Risk |
+| **Scoped IAM Readiness Check** | S3 `/ready` probe uses `list_objects_v2` with `Prefix='uploads/'` | Least-Privilege IAM Permission Errors |
 
 ---
 
 ## 6. Telemetry, Logging & Monitoring
 
 - **Structured JSON Logging**: Every log line in `logs/app.log` and `logs/audit.log` is formatted as a single JSON object with `timestamp`, `level`, `request_id`, `user`, and `ip`.
-- **CloudWatch Log Shipping**: The unified CloudWatch agent streams application logs and Nginx access/error logs to `/nova/app`, `/nova/access`, `/nova/audit`, and `/nova/nginx/*` with 14-day retention.
+- **CloudWatch Log Shipping**: The unified CloudWatch agent (user `cwagent`, added to `nova` and `adm` groups) streams application logs and Nginx access/error logs to `/nova/app`, `/nova/access`, `/nova/audit`, and `/nova/nginx/*` with 14-day retention.
 - **Metric Alarms**: Configured alarms monitor CPU (> 70%), StatusCheckFailed (> 0), root disk (> 80%), memory (> 80%), and application error counts (> 5 in 5 min) notifying an Amazon SNS email topic.
 
 ---
@@ -125,4 +130,19 @@ The database is managed exclusively through numbered, idempotent SQL migrations 
   - `limit_req_zone $binary_remote_addr zone=auth_zone:10m rate=5r/m;`
   - `limit_req_zone $binary_remote_addr zone=api_zone:10m rate=15r/s;`
 - **Future Multi-Node Scalability**: For multi-instance auto-scaling deployments, rate limiting state should be centralized in an Amazon ElastiCache (Redis) cluster.
+
+---
+
+## 8. Automated Deployment & Continuous Updates
+
+- **Zero-Drift Synchronization**: The production update pipeline script `deploy/scripts/update-nova.sh` automates the release process on EC2:
+  - `git pull --ff-only` ensures fast-forward updates without merge conflicts or detached heads.
+  - `rsync -av --delete` synchronizes updated source code to `/opt/nova` while strictly preserving runtime state: excludes `.git`, `venv`, `logs`, `.env`, and SQLite database files (`*.db*`).
+- **Hardened Permissions Enforcement**:
+  - Re-applies `chown -R nova:nova /opt/nova /var/lib/nova`.
+  - Re-enforces `chmod 750 /opt/nova /var/lib/nova /opt/nova/logs`.
+- **Atomic Migrations & Service Restart**:
+  - Runs `/opt/nova/venv/bin/python3 manage.py migrate` to apply pending database schema migrations.
+  - Restarts `nova.service` daemon via systemd.
+  - Asserts that both database and storage subsystems are fully online via `/ready` before completing.
 

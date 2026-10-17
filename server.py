@@ -1545,8 +1545,8 @@ def serve_js(filename):
 @app.route('/data/<path:filename>')
 def serve_data(filename):
     lower_fn = filename.lower()
-    if lower_fn.endswith(('.db', '.db-wal', '.db-shm', '.sqlite', '.sqlite3', '.py', '.sql', '.log')) or '/.' in ('/' + lower_fn):
-        abort(403)
+    if not lower_fn.endswith('.js') or '/.' in ('/' + lower_fn):
+        abort(404)
     return send_from_directory(os.path.join(DIRECTORY, 'data'), filename)
 
 @app.route('/local_uploads/<path:filename>')
@@ -5828,14 +5828,17 @@ def run_automated_tests(port):
         record_test("47. CLI create-curator Non-Interactive Execution, Auth & Curator-Only Route RBAC", test_47_passed)
 
         # 48. Direct Access to Sensitive Files Blocked (403 / 404)
-        sensitive_probe_paths = ["/data/nova.db", "/nova.db", "/server.py", "/.env", "/logs/app.log"]
+        sensitive_probe_paths = [
+            "/data/nova.db", "/nova.db", "/server.py", "/manage.py",
+            "/.env", "/requirements.txt", "/logs/app.log", "/deploy/nginx.conf"
+        ]
         sensitive_all_blocked = True
         for sp in sensitive_probe_paths:
             r_sens = requests.get(f"{base_url}{sp}", timeout=3)
             if r_sens.status_code not in (403, 404):
                 sensitive_all_blocked = False
                 break
-        record_test("48. Direct Access to Sensitive Files Blocked (/data/nova.db, /nova.db, /server.py, /.env, /logs/app.log -> 403/404)", sensitive_all_blocked)
+        record_test("48. Direct Access to Sensitive Files Blocked (All 8 sensitive endpoints -> 403/404)", sensitive_all_blocked)
 
 
     finally:
