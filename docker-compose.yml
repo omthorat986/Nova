@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
+    container_name: nova_app
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - APP_ENV=production
+      - GUNICORN_BIND=0.0.0.0:8080
+      - GUNICORN_WORKERS=2
+      - NOVA_DB_PATH=/var/www/nova/nova.db
+    volumes:
+      - nova_data:/var/www/nova
+      - nova_logs:/app/logs
+    expose:
+      - "8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  nginx:
+    image: nginx:alpine
+    container_name: nova_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./css:/var/www/nova/css:ro
+      - ./js:/var/www/nova/js:ro
+      - ./data:/var/www/nova/data:ro
+      - ./robots.txt:/var/www/nova/robots.txt:ro
+      - ./sitemap.xml:/var/www/nova/sitemap.xml:ro
+      - ./manifest.json:/var/www/nova/manifest.json:ro
+      - nova_logs:/var/log/nginx
+    depends_on:
+      app:
+        condition: service_healthy
+
+volumes:
+  nova_data:
+  nova_logs:

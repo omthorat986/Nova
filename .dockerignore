@@ -1,0 +1,42 @@
+# Git
+.git/
+.gitignore
+
+# Environments & secrets
+.env*
+*.env
+*.pem
+*.key
+
+# Local databases & uploads
+*.db
+*.db-*
+*.sqlite*
+local_uploads/
+uploads/
+backups/
+
+# Logs
+logs/
+*.log
+
+# Cache & virtualenvs
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+node_modules/
+
+# OS and Editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Documentation and tests not needed in runtime image
+report/
+tests/
+test-cases.md
+screenshots*.png
+*.zip

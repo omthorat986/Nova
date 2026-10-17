@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /api/
+Disallow: /moderation
+Disallow: /local_uploads/
+Allow: /
+
+Sitemap: https://nova.space/sitemap.xml

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NOVA // Space Agency Dossier</title>
+  <meta name="description" content="Verified space agency channel telemetry, observer dispatches, official news feeds, and research outreach." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%2302040A' stroke='%235CC8FF' stroke-width='4'/><circle cx='50' cy='50' r='12' fill='%235CC8FF'/></svg>" />
+  <link rel="stylesheet" href="/css/social.css" />
+  <link rel="stylesheet" href="/css/postcard.css" />
+  <link rel="stylesheet" href="/css/avatar.css" />
+  <link rel="stylesheet" href="/css/ui.css" />
+  <meta name="csrf-token" content="" />
+  <style>
+    .agency-banner-hero {
+      position: relative;
+      border: var(--border-hairline);
+      border-radius: var(--radius-tech);
+      overflow: hidden;
+      margin-bottom: 24px;
+      background: var(--bg-card);
+    }
+    .agency-gradient-strip {
+      height: 140px;
+      width: 100%;
+      position: relative;
+      background: linear-gradient(135deg, #0b3d91 0%, #1e1b4b 60%, #030712 100%);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .agency-hero-content {
+      padding: 0 28px 24px;
+      position: relative;
+    }
+    .agency-hero-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .agency-hero-badge-wrap {
+      margin-top: -46px;
+    }
+    .agency-hero-badge {
+      width: 80px;
+      height: 80px;
+      border-radius: var(--radius-tech);
+      background: #020617;
+      border: 2px solid var(--accent-cyan);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      letter-spacing: 0.05em;
+    }
+    .agency-hero-actions-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .agency-hero-title-area {
+      margin-bottom: 12px;
+    }
+    .agency-hero-title-area .page-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #fff;
+      margin: 4px 0 2px 0;
+    }
+    .agency-stats-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.04);
+      padding: 6px 14px;
+      border-radius: var(--radius-tech);
+      border: var(--border-subtle);
+    }
+    .unaffiliated-disclosure {
+      background: rgba(92, 200, 255, 0.03);
+      border-left: 2px solid var(--accent-cyan);
+      padding: 10px 14px;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 16px;
+      line-height: 1.45;
+      font-family: var(--font-mono);
+    }
+    .agency-tabs-nav {
+      display: flex;
+      gap: 4px;
+      border-bottom: var(--border-hairline);
+      margin-bottom: 24px;
+      overflow-x: auto;
+    }
+    .agency-tab-btn {
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 12px 18px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .agency-tab-btn:hover {
+      color: #fff;
+    }
+    .agency-tab-btn.active {
+      color: var(--accent-cyan);
+      border-bottom-color: var(--accent-cyan);
+      background: rgba(92, 200, 255, 0.05);
+    }
+    .launch-manifest-item {
+      background: var(--bg-card);
+      border: var(--border-hairline);
+      border-radius: var(--radius-tech);
+      padding: 16px 20px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="starfield-canvas"></canvas>
+
+  <div class="page-wrapper">
+    <div id="shared-navbar-container"></div>
+
+    <main class="main-container">
+      <!-- HERO DOSSIER -->
+      <section class="agency-banner-hero" id="agency-hero-wrapper">
+        <div class="agency-gradient-strip" id="agency-hero-gradient"></div>
+        <div class="agency-hero-content">
+          <div class="agency-hero-top-row">
+            <div class="agency-hero-badge-wrap">
+              <div class="agency-hero-badge" id="agency-hero-badge">AG</div>
+            </div>
+            <div class="agency-hero-actions-wrap">
+              <div class="agency-stats-pill">
+                <span id="agency-hero-followers">0</span>
+                <span>FOLLOWERS</span>
+              </div>
+              <button class="btn-tech btn-tech-primary" id="btn-hero-follow-agency">[FOLLOW]</button>
+            </div>
+          </div>
+          <div class="agency-hero-title-area">
+            <span class="mono-label" id="agency-hero-code" style="color: var(--accent-cyan);">AGENCY // REGISTRY</span>
+            <h1 class="page-title" id="agency-hero-name" style="margin-bottom: 2px;">Loading Space Agency...</h1>
+            <span class="mono-sublabel" id="agency-hero-country">Location: Orbital</span>
+          </div>
+
+          <p id="agency-hero-desc" style="color: var(--text-muted); font-size: 13px; line-height: 1.6; max-width: 800px; margin-bottom: 12px;">
+            Scientific telemetry, mission operations, and observational archives.
+          </p>
+
+          <div style="display: flex; gap: 20px; font-family: var(--font-mono); font-size: 11px; flex-wrap: wrap;" id="agency-official-links">
+            <!-- Populated via JS -->
+          </div>
+
+          <div class="unaffiliated-disclosure">
+            // INDEPENDENT NETWORK DISCLOSURE: Logo is the property of the respective agency. NOVA is not affiliated.
+          </div>
+        </div>
+      </section>
+
+      <!-- 4 TABS NAVIGATION -->
+      <nav class="agency-tabs-nav" aria-label="Agency Dossier Navigation">
+        <button class="agency-tab-btn active" data-tab="posts" id="tab-nav-posts">[ POSTS ]</button>
+        <button class="agency-tab-btn" data-tab="news" id="tab-nav-news">[ NEWS (OFFICIAL FEED) ]</button>
+        <button class="agency-tab-btn" data-tab="launches" id="tab-nav-launches">[ LAUNCHES ]</button>
+        <button class="agency-tab-btn" data-tab="outreach" id="tab-nav-outreach">[ RESEARCH OUTREACH ]</button>
+      </nav>
+
+      <!-- TAB 1: POSTS -->
+      <section id="pane-posts" class="agency-tab-pane">
+        <!-- Controls: Sort + Topic Chips + View Toggle -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 12px;">
+          <div style="display: flex; gap: 6px;" id="posts-sort-bar">
+            <button class="feed-tab-btn active" data-sort="new">[ NEW ]</button>
+            <button class="feed-tab-btn" data-sort="hot">[ HOT ]</button>
+            <button class="feed-tab-btn" data-sort="top">[ TOP ]</button>
+          </div>
+          <div class="layout-toggle-group" id="agency-layout-toggle" role="group" aria-label="Stream Layout">
+            <span class="mono-sublabel" style="font-size: 9px; margin-right: 2px;">VIEW:</span>
+            <button class="layout-toggle-btn" id="btn-agency-list" data-layout="list" title="List View">[LIST]</button>
+            <button class="layout-toggle-btn active" id="btn-agency-grid" data-layout="grid" title="Grid View">[GRID]</button>
+            <button class="layout-toggle-btn" id="btn-agency-compact" data-layout="compact" title="Compact View">[COMPACT]</button>
+          </div>
+        </div>
+
+        <!-- Topic chips single scroll row -->
+        <div class="topic-chips-scroll-row" id="agency-category-pills" role="toolbar" aria-label="Topic Frequencies" style="margin-bottom: 18px;">
+          <span class="mono-sublabel" style="font-size: 9px; margin-right: 4px; flex-shrink: 0;">TOPICS:</span>
+          <button class="cat-chip active" data-cat="All">ALL</button>
+          <button class="cat-chip" data-cat="Planets">PLANETS</button>
+          <button class="cat-chip" data-cat="Missions">MISSIONS</button>
+          <button class="cat-chip" data-cat="Astronomy">ASTRONOMY</button>
+          <button class="cat-chip" data-cat="Astrophysics">ASTROPHYSICS</button>
+          <button class="cat-chip" data-cat="Launches">LAUNCHES</button>
+          <button class="cat-chip" data-cat="Research">RESEARCH</button>
+          <button class="cat-chip" data-cat="Other">OTHER</button>
+        </div>
+
+        <div id="agency-posts-container" class="posts-stream-grid">
+          <div class="hairline-card" style="padding: 30px;">
+            <div class="skeleton-box" style="height: 18px; width: 40%; margin-bottom: 12px;"></div>
+            <div class="skeleton-box" style="height: 14px; width: 80%;"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: NEWS (OFFICIAL FEED) -->
+      <section id="pane-news" class="agency-tab-pane" style="display: none;">
+        <div class="card-header-bar" style="margin-bottom: 18px;">
+          <div>
+            <span class="mono-label" style="color: var(--accent-cyan);">// OFFICIAL EXTERNAL NEWS FEED</span>
+            <span class="mono-sublabel" style="margin-left: 10px;">SERVER-CACHED RSS TELEMETRY</span>
+          </div>
+          <span class="official-feed-badge">[ OFFICIAL FEED ]</span>
+        </div>
+
+        <div id="agency-news-container">
+          <div class="skeleton-box" style="height: 90px; margin-bottom: 14px;"></div>
+          <div class="skeleton-box" style="height: 90px;"></div>
+        </div>
+      </section>
+
+      <!-- TAB 3: LAUNCHES -->
+      <section id="pane-launches" class="agency-tab-pane" style="display: none;">
+        <div class="card-header-bar" style="margin-bottom: 18px;">
+          <span class="mono-label">// UPCOMING MISSION MANIFEST</span>
+          <span class="mono-sublabel">LAUNCH LIBRARY TELEMETRY</span>
+        </div>
+
+        <div id="agency-launches-container">
+          <div class="skeleton-box" style="height: 70px; margin-bottom: 12px;"></div>
+          <div class="skeleton-box" style="height: 70px;"></div>
+        </div>
+      </section>
+
+      <!-- TAB 4: RESEARCH OUTREACH -->
+      <section id="pane-outreach" class="agency-tab-pane" style="display: none;">
+        <div class="hairline-card" style="padding: 24px;">
+          <div class="card-header-bar" style="margin-bottom: 14px;">
+            <span class="mono-label">// RESEARCH OUTREACH CONDUIT</span>
+            <span class="mono-sublabel">RATE LIMIT: 3 / DAY</span>
+          </div>
+
+          <div style="background: rgba(251, 191, 36, 0.05); border-left: 2px solid var(--accent-gold); padding: 12px 16px; margin-bottom: 20px; font-size: 11px; color: var(--text-muted); line-height: 1.5;">
+            <strong style="color: var(--accent-gold); font-family: var(--font-mono); display: block; margin-bottom: 4px;">// TRANSPARENCY NOTICE (HONEST COMMUNICATION)</strong>
+            NOVA logs your research dispatch into the verified observation registry and formats a copy-ready official scientific proposal draft. NOVA is an independent planetary observation network and cannot guarantee an external agency response.
+          </div>
+
+          <form id="outreach-composer-form">
+            <div class="form-group">
+              <label class="form-label" for="outreach-subject">RESEARCH SUBJECT</label>
+              <input type="text" class="form-input" id="outreach-subject" placeholder="e.g. Independent Photometric Transit Analysis of TOI-700 d" maxlength="200" required />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="outreach-area">RESEARCH DOMAIN / FIELD</label>
+              <input type="text" class="form-input" id="outreach-area" placeholder="e.g. Exoplanet Spectroscopy / Planetary Science" maxlength="100" required />
+            </div>
+
+            <div class="form-group">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <label class="form-label" for="outreach-body" style="margin-bottom: 0;">PROPOSAL INQUIRY (MAX 1500 CHARS)</label>
+                <span class="mono-sublabel" id="outreach-char-count">0 / 1500</span>
+              </div>
+              <textarea class="form-textarea" id="outreach-body" rows="5" placeholder="Detail your scientific methodology, telescope observation data, or collaboration inquiry..." maxlength="1500" required></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="outreach-pdf">ATTACH RESEARCH PROPOSAL (OPTIONAL PDF - MAX 5 MB)</label>
+              <input type="file" class="form-input" id="outreach-pdf" accept="application/pdf" />
+            </div>
+
+            <button type="submit" class="btn-tech btn-tech-primary" id="btn-submit-outreach" style="width: 100%;">
+              <span>[TRANSMIT OUTREACH DISPATCH]</span>
+            </button>
+          </form>
+
+          <div id="draft-result-area" style="display: none; margin-top: 24px;"></div>
+        </div>
+      </section>
+    </main>
+
+    <div id="shared-footer-container"></div>
+  </div>
+
+  <script src="/js/ui.js"></script>
+  <script src="/js/api.js"></script>
+  <script type="module" src="/js/avatar.js"></script>
+  <script type="module" src="/js/image-modal.js"></script>
+  <script type="module" src="/js/page-agency-detail.js"></script>
+</body>
+</html>

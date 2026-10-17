@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NOVA // 403 - Access Prohibited</title>
+  <meta name="description" content="Access to this orbital subsystem is restricted or observer credentials lack required authorization." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%2302040A' stroke='%235CC8FF' stroke-width='4'/><circle cx='50' cy='50' r='12' fill='%235CC8FF'/></svg>" />
+  <link rel="stylesheet" href="/css/social.css" />
+  <link rel="stylesheet" href="/css/ui.css" />
+  <meta name="csrf-token" content="" />
+  <style>
+    .error-wrapper {
+      max-width: 580px;
+      margin: 80px auto;
+      text-align: center;
+      padding: 48px 32px;
+      background: var(--bg-card);
+      border: var(--border-hairline);
+      border-radius: var(--radius-tech);
+      backdrop-filter: blur(16px);
+    }
+    .error-code {
+      font-family: var(--font-mono);
+      font-size: 64px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: var(--accent-alert);
+      text-shadow: 0 0 30px rgba(239, 68, 68, 0.4);
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="starfield-canvas"></canvas>
+
+  <div class="page-wrapper">
+    <div id="shared-navbar-container"></div>
+
+    <main class="main-container">
+      <div class="error-wrapper">
+        <div class="mono-label" style="color: var(--accent-alert); margin-bottom: 12px;">// RESTRICTED SECTOR ENCOUNTERED</div>
+        <div class="error-code">403</div>
+        <h1 class="page-title" style="font-size: 18px; margin-bottom: 12px;">AUTHORIZATION LEVEL INSUFFICIENT</h1>
+        <p style="color: var(--text-muted); font-size: 13px; line-height: 1.6; margin-bottom: 24px;">
+          Your current cryptographic clearance does not permit navigation to this observatory console or object record.
+        </p>
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+          <a href="/" class="btn-tech btn-tech-primary">[RETURN TO BASE]</a>
+          <a href="/login" class="btn-tech btn-tech-secondary">[AUTHENTICATE CALLSIGN]</a>
+        </div>
+      </div>
+    </main>
+
+    <div id="shared-footer-container"></div>
+  </div>
+
+  <script src="/js/ui.js"></script>
+  <script src="/js/api.js"></script>
+  <script type="module" src="/js/page-404.js"></script>
+</body>
+</html>

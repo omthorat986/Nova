@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NOVA // Terms of Orbital Use</title>
+  <meta name="description" content="Terms of use governing participation in the NOVA deep space observatory and scientific telemetry network." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%2302040A' stroke='%235CC8FF' stroke-width='4'/><circle cx='50' cy='50' r='12' fill='%235CC8FF'/></svg>" />
+  <link rel="stylesheet" href="/css/social.css" />
+  <link rel="stylesheet" href="/css/ui.css" />
+  <meta name="csrf-token" content="" />
+  <style>
+    .legal-container {
+      max-width: 800px;
+      margin: 40px auto 80px;
+      padding: 32px;
+      background: var(--bg-card);
+      border: var(--border-hairline);
+      border-radius: var(--radius-tech);
+      backdrop-filter: blur(16px);
+    }
+    .legal-section {
+      margin-bottom: 24px;
+    }
+    .legal-section h2 {
+      font-size: 15px;
+      font-family: var(--font-mono);
+      color: var(--accent-cyan);
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+    .legal-section p {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="starfield-canvas"></canvas>
+
+  <div class="page-wrapper">
+    <div id="shared-navbar-container"></div>
+
+    <main class="main-container">
+      <div class="legal-container">
+        <div class="mono-label" style="color: var(--accent-gold); margin-bottom: 8px;">// OBSERVATORY CHARTER & PROTOCOLS</div>
+        <h1 class="page-title" style="font-size: 24px; margin-bottom: 16px;">TERMS OF ORBITAL USE</h1>
+        <div class="mono-sublabel" style="margin-bottom: 28px;">REVISION: 2026.10 // STRICT SCIENTIFIC GOVERNANCE</div>
+
+        <div class="legal-section">
+          <h2>// 01 ACCEPTABLE USE & SCIENTIFIC INTEGRITY</h2>
+          <p>
+            The NOVA Deep Space Observatory is dedicated to astrophysics research, space exploration education, and collaborative observation telemetry. Dispatches must adhere to factual astronomical standards. Harassment, spam, fraudulent outreach, or transmission of malicious payloads is strictly prohibited and subject to immediate observer suspension.
+          </p>
+        </div>
+
+        <div class="legal-section">
+          <h2>// 02 INTELLECTUAL PROPERTY & ASTROPHOTOGRAPHY</h2>
+          <p>
+            Observers retain ownership of original imagery, telescope captures, and research writeups submitted to the observatory. By transmitting dispatches, you grant NOVA a non-exclusive license to index, display, and cache telemetry for global scientific dissemination.
+          </p>
+        </div>
+
+        <div class="legal-section">
+          <h2>// 03 ACCOUNT ACCOUNTABILITY & SESSION SECURITY</h2>
+          <p>
+            Observers are solely responsible for maintaining the confidentiality of their authentication credentials. Sessions are automatically protected with inactivity lockouts and token revocation. Any detected brute-force attempts will trigger immediate IP and account lockout telemetry.
+          </p>
+        </div>
+
+        <div class="legal-section">
+          <h2>// 04 LIMITATION OF LIABILITY</h2>
+          <p>
+            NOVA provides all orbital trajectories, launch schedules, and astrophysical telemetry on an "as-available" basis without express warranty. External agency feeds are subject to upstream latency and availability variations.
+          </p>
+        </div>
+
+        <div style="margin-top: 32px; display: flex; gap: 12px; flex-wrap: wrap;">
+          <a href="/" class="btn-tech btn-tech-primary">[RETURN TO BASE]</a>
+          <a href="/privacy" class="btn-tech btn-tech-secondary">[PRIVACY PROTOCOL]</a>
+          <a href="/contact" class="btn-tech btn-tech-secondary">[CONTACT MISSION CONTROL]</a>
+        </div>
+      </div>
+    </main>
+
+    <div id="shared-footer-container"></div>
+  </div>
+
+  <script src="/js/ui.js"></script>
+  <script src="/js/api.js"></script>
+  <script type="module" src="/js/page-404.js"></script>
+</body>
+</html>

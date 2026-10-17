@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NOVA // Moderator & Curation Console</title>
+  <meta name="description" content="Scientific integrity curation, content moderation queue, and observer suspension registry." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%2302040A' stroke='%235CC8FF' stroke-width='4'/><circle cx='50' cy='50' r='12' fill='%235CC8FF'/></svg>" />
+  <link rel="stylesheet" href="/css/social.css" />
+  <link rel="stylesheet" href="/css/avatar.css" />
+  <link rel="stylesheet" href="/css/ui.css" />
+  <meta name="csrf-token" content="" />
+  <style>
+    .report-card {
+      background: var(--bg-card);
+      border: 1px solid rgba(251, 191, 36, 0.25);
+      border-radius: var(--radius-tech);
+      padding: 20px;
+      margin-bottom: 16px;
+      backdrop-filter: blur(12px);
+    }
+    .report-card:hover {
+      border-color: var(--accent-gold);
+    }
+    .report-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      border-bottom: var(--border-subtle);
+      padding-bottom: 8px;
+    }
+    .report-target-snippet {
+      background: rgba(3, 7, 16, 0.7);
+      border-left: 2px solid var(--accent-alert);
+      padding: 10px 14px;
+      margin: 12px 0;
+      border-radius: var(--radius-tech);
+    }
+    .curator-actions-bar {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      border-top: var(--border-subtle);
+      padding-top: 12px;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="starfield-canvas"></canvas>
+
+  <div class="page-wrapper">
+    <div id="shared-navbar-container"></div>
+
+    <main class="main-container">
+      <div class="page-header-row">
+        <div>
+          <span class="mono-label" style="color: var(--accent-gold);">// RESTRICTED ACCESS • LEVEL 2 CURATOR CONSOLE</span>
+          <h1 class="page-title">MODERATION & CURATION QUEUE</h1>
+          <p class="page-subtitle">
+            Review flagged observation logs, enforce scientific integrity standards, remove non-compliant content, manage agency channels, and handle station suspensions.
+          </p>
+        </div>
+      </div>
+
+      <div id="reports-queue-container" style="margin-bottom: 32px;">
+        <div class="hairline-card" style="padding: 30px;">
+          <div class="skeleton-box" style="height: 18px; width: 40%; margin-bottom: 12px;"></div>
+          <div class="skeleton-box" style="height: 14px; width: 80%;"></div>
+        </div>
+      </div>
+
+      <!-- AGENCY CHANNEL PROFILE & OUTREACH EDITOR -->
+      <section class="hairline-card" style="padding: 24px;">
+        <div class="card-header-bar" style="margin-bottom: 16px;">
+          <span class="mono-label" style="color: var(--accent-gold);">// AGENCY CHANNEL METADATA CURATION</span>
+          <span class="mono-sublabel">IMMUTABLE CHANNELS • CURATOR PRIVILEGE</span>
+        </div>
+        <div style="background: rgba(92,200,255,0.04); border-left: 2px solid var(--accent-cyan); padding: 12px 16px; margin-bottom: 20px; font-size: 11px; color: var(--text-muted); line-height: 1.5;">
+          <span class="mono-label" style="color: var(--accent-cyan); display: block; margin-bottom: 4px;">// FIXED TOPOLOGY NOTICE</span>
+          Space agency channels (and General Space) cannot be created or deleted via the UI. Curators hold authorization to update agency descriptions, official website links, and official outreach contact endpoints.
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="mod-agency-select">SELECT AGENCY CHANNEL</label>
+          <select class="form-select" id="mod-agency-select">
+            <option value="" disabled selected>Loading verified channels...</option>
+          </select>
+        </div>
+
+        <form id="mod-agency-form" style="display: none; margin-top: 16px;">
+          <div class="form-group">
+            <label class="form-label" for="mod-agency-desc">PUBLIC MISSION DESCRIPTION</label>
+            <textarea class="form-textarea" id="mod-agency-desc" rows="3" required></textarea>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" for="mod-agency-website">OFFICIAL WEBSITE URL</label>
+              <input type="url" class="form-input" id="mod-agency-website" required />
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" for="mod-agency-contact">OFFICIAL CONTACT / OUTREACH URL</label>
+              <input type="url" class="form-input" id="mod-agency-contact" required />
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 10px;">
+            <button type="submit" class="btn-tech btn-tech-primary" id="btn-save-agency-meta">
+              <span>[SAVE AGENCY METADATA]</span>
+            </button>
+          </div>
+        </form>
+      </section>
+    </main>
+
+  </div>
+  <script src="/js/ui.js"></script>
+  <script src="/js/api.js"></script>
+  <script type="module" src="/js/avatar.js"></script>
+  <script type="module" src="/js/page-moderation.js"></script>
+</body>
+</html>

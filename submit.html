@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NOVA // Transmit Dispatch</title>
+  <meta name="description" content="Transmit astrophysical observation logs, telemetry findings, and scientific dispatches to space agency channels." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%2302040A' stroke='%235CC8FF' stroke-width='4'/><circle cx='50' cy='50' r='12' fill='%235CC8FF'/></svg>" />
+  <link rel="stylesheet" href="/css/social.css" />
+  <link rel="stylesheet" href="/css/ui.css" />
+  <meta name="csrf-token" content="" />
+</head>
+<body>
+  <canvas id="starfield-canvas"></canvas>
+
+  <div class="page-wrapper">
+    <div id="shared-navbar-container"></div>
+
+    <main class="main-container" style="max-width: 760px; margin: 0 auto; padding: 36px 20px;">
+      <div class="page-header-row" style="margin-bottom: 24px;">
+        <div>
+          <span class="mono-label">// TRANSMISSION UPLINK</span>
+          <h1 class="page-title">TRANSMIT OBSERVATION DISPATCH</h1>
+          <p class="page-subtitle">Submit telemetry observations, astrophotography, and astrophysical research to space agency channels and global observers.</p>
+        </div>
+      </div>
+
+      <!-- STANDALONE COMPOSER CONTAINER (SHARES EXACT SAME JS/COMPOSER.JS COMPONENT) -->
+      <div id="composer-standalone-container">
+        <div class="hairline-card" style="padding: 40px; text-align: center;">
+          <div class="skeleton-box" style="height: 24px; width: 60%; margin: 0 auto 16px;"></div>
+          <div class="skeleton-box" style="height: 120px; width: 100%; margin-bottom: 16px;"></div>
+          <div class="skeleton-box" style="height: 40px; width: 40%; margin: 0 auto;"></div>
+        </div>
+      </div>
+    </main>
+
+    <div id="shared-footer-container"></div>
+  </div>
+
+  <script src="/js/ui.js"></script>
+  <script src="/js/api.js"></script>
+  <script type="module">
+    import { SharedNav, initStarfield, AuthState } from '/js/social.js';
+    import { Composer } from '/js/composer.js';
+
+    initStarfield('starfield-canvas');
+    SharedNav.init('submit');
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const agencyParam = urlParams.get('agency') || '';
+
+    AuthState.fetchUser().then(user => {
+      if (!user) {
+        const nextUrl = encodeURIComponent(window.location.pathname + window.location.search);
+        const container = document.getElementById('composer-standalone-container');
+        if (container) {
+          container.innerHTML = `
+            <div class="hairline-card" style="padding: 40px; text-align: center;">
+              <span class="mono-label" style="color: var(--accent-cyan); font-size: 11px;">// AUTHENTICATION REQUIRED</span>
+              <h2 style="font-family: var(--font-mono); font-size: 16px; color: #fff; margin: 12px 0;">LOG IN TO TRANSMIT</h2>
+              <p class="mono-sublabel" style="max-width: 460px; margin: 0 auto 20px; font-size: 12px;">
+                Authentication is required to broadcast observation dispatches and submit scientific telemetry to space agency channels.
+              </p>
+              <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+                <a href="/login?next=${nextUrl}" class="btn-tech btn-tech-primary">[AUTH // LOG IN]</a>
+                <a href="/register?next=${nextUrl}" class="btn-tech btn-tech-secondary">[CREATE ACCOUNT]</a>
+              </div>
+            </div>
+          `;
+        }
+        return;
+      }
+
+      Composer.renderStandalone('#composer-standalone-container', {
+        agency: agencyParam,
+        onSuccess: (post) => {
+          window.location.href = `/social?sort=new#post-${post.id}`;
+        }
+      });
+    });
+  </script>
+</body>
+</html>

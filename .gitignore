@@ -1,0 +1,42 @@
+# Environment variables & secrets
+.env*
+*.env
+*.pem
+*.key
+
+# SQLite databases & journals
+*.db
+*.db-*
+*.sqlite*
+
+# Uploads & temporary storage
+local_uploads/
+uploads/
+backups/
+
+# Logging
+logs/
+*.log
+
+# Python cache & virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+.pytest_cache/
+
+# Node.js
+node_modules/
+
+# OS and editor artifacts
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.bak
+*.tmp
+canvas_dump.png

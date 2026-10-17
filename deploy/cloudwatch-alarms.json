@@ -1,0 +1,102 @@
+{
+  "Alarms": [
+    {
+      "AlarmName": "Nova-EC2-HighCPUUtilization",
+      "AlarmDescription": "Triggers when EC2 instance CPU utilization exceeds 70% for 2 consecutive minutes.",
+      "Namespace": "AWS/EC2",
+      "MetricName": "CPUUtilization",
+      "Dimensions": [
+        {
+          "Name": "InstanceId",
+          "Value": "YOUR_INSTANCE_ID"
+        }
+      ],
+      "Period": 60,
+      "EvaluationPeriods": 2,
+      "Threshold": 70.0,
+      "ComparisonOperator": "GreaterThanThreshold",
+      "Statistic": "Average",
+      "AlarmActions": [
+        "arn:aws:sns:us-east-1:YOUR_ACCOUNT_ID:nova-alerts-topic"
+      ]
+    },
+    {
+      "AlarmName": "Nova-EC2-StatusCheckFailed",
+      "AlarmDescription": "Triggers immediately if EC2 underlying hardware or system status checks fail.",
+      "Namespace": "AWS/EC2",
+      "MetricName": "StatusCheckFailed",
+      "Dimensions": [
+        {
+          "Name": "InstanceId",
+          "Value": "YOUR_INSTANCE_ID"
+        }
+      ],
+      "Period": 60,
+      "EvaluationPeriods": 1,
+      "Threshold": 0.0,
+      "ComparisonOperator": "GreaterThanThreshold",
+      "Statistic": "Maximum",
+      "AlarmActions": [
+        "arn:aws:sns:us-east-1:YOUR_ACCOUNT_ID:nova-alerts-topic"
+      ]
+    },
+    {
+      "AlarmName": "Nova-EC2-HighDiskUtilization",
+      "AlarmDescription": "Triggers when root filesystem disk utilization exceeds 80%.",
+      "Namespace": "NovaSpace/ObservatoryMetrics",
+      "MetricName": "disk_used_percent",
+      "Dimensions": [
+        {
+          "Name": "InstanceId",
+          "Value": "YOUR_INSTANCE_ID"
+        },
+        {
+          "Name": "path",
+          "Value": "/"
+        }
+      ],
+      "Period": 60,
+      "EvaluationPeriods": 2,
+      "Threshold": 80.0,
+      "ComparisonOperator": "GreaterThanThreshold",
+      "Statistic": "Average",
+      "AlarmActions": [
+        "arn:aws:sns:us-east-1:YOUR_ACCOUNT_ID:nova-alerts-topic"
+      ]
+    },
+    {
+      "AlarmName": "Nova-EC2-HighMemoryUtilization",
+      "AlarmDescription": "Triggers when system memory utilization exceeds 80%.",
+      "Namespace": "NovaSpace/ObservatoryMetrics",
+      "MetricName": "mem_used_percent",
+      "Dimensions": [
+        {
+          "Name": "InstanceId",
+          "Value": "YOUR_INSTANCE_ID"
+        }
+      ],
+      "Period": 60,
+      "EvaluationPeriods": 2,
+      "Threshold": 80.0,
+      "ComparisonOperator": "GreaterThanThreshold",
+      "Statistic": "Average",
+      "AlarmActions": [
+        "arn:aws:sns:us-east-1:YOUR_ACCOUNT_ID:nova-alerts-topic"
+      ]
+    },
+    {
+      "AlarmName": "Nova-App-5xx-and-Errors",
+      "AlarmDescription": "Triggers when application logs report 5 or more ERROR entries or HTTP 5xx responses within a 5-minute window.",
+      "Namespace": "NovaSpace/ObservatoryMetrics",
+      "MetricName": "ErrorCount",
+      "Period": 300,
+      "EvaluationPeriods": 1,
+      "Threshold": 5.0,
+      "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+      "Statistic": "Sum",
+      "AlarmActions": [
+        "arn:aws:sns:us-east-1:YOUR_ACCOUNT_ID:nova-alerts-topic"
+      ]
+    }
+  ]
+}

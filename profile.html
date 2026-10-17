@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NOVA // Observer Profile</title>
+  <meta name="description" content="Observer profile, scientific dispatches, and research credentials on the NOVA network." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%2302040A' stroke='%235CC8FF' stroke-width='4'/><circle cx='50' cy='50' r='12' fill='%235CC8FF'/></svg>" />
+  <link rel="stylesheet" href="/css/social.css" />
+  <link rel="stylesheet" href="/css/postcard.css" />
+  <link rel="stylesheet" href="/css/avatar.css" />
+  <link rel="stylesheet" href="/css/ui.css" />
+  <meta name="csrf-token" content="" />
+  <style>
+    .profile-header-card {
+      background: var(--bg-card);
+      border: var(--border-hairline);
+      border-radius: var(--radius-tech);
+      padding: 28px;
+      margin-bottom: 24px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 24px;
+      align-items: center;
+      backdrop-filter: blur(12px);
+    }
+    @media (max-width: 768px) {
+      .profile-header-card {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+      .profile-stats-row {
+        justify-content: center !important;
+      }
+    }
+    .profile-stats-row {
+      display: flex;
+      gap: 24px;
+      margin-top: 14px;
+    }
+    .profile-stat-box {
+      display: flex;
+      flex-direction: column;
+    }
+    .stat-number {
+      font-family: var(--font-mono);
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .stat-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-mono);
+      letter-spacing: 0.1em;
+    }
+    .profile-tabs {
+      display: flex;
+      gap: 8px;
+      border-bottom: var(--border-hairline);
+      margin-bottom: 24px;
+      overflow-x: auto;
+    }
+    .profile-tab-btn {
+      background: transparent;
+      border: none;
+      padding: 12px 18px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      cursor: pointer;
+      position: relative;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .profile-tab-btn.active {
+      color: var(--accent-cyan);
+      font-weight: 600;
+    }
+    .profile-tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--accent-cyan);
+      box-shadow: 0 0 10px var(--accent-cyan);
+    }
+    .private-badge-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 4px 10px;
+      border-radius: var(--radius-tech);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: #fca5a5;
+      margin-bottom: 12px;
+    }
+    .user-list-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--bg-card);
+      border: var(--border-hairline);
+      border-radius: var(--radius-tech);
+      margin-bottom: 10px;
+    }
+    .outreach-table-card {
+      background: var(--bg-card);
+      border: var(--border-hairline);
+      border-radius: var(--radius-tech);
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="starfield-canvas"></canvas>
+
+  <div class="page-wrapper">
+    <div id="shared-navbar-container"></div>
+
+    <main class="main-container">
+      <!-- PROFILE HEADER -->
+      <div class="profile-header-card" id="profile-header">
+        <div class="skeleton-box" style="width: 80px; height: 80px;"></div>
+        <div>
+          <div class="skeleton-box" style="width: 200px; height: 24px; margin-bottom: 8px;"></div>
+          <div class="skeleton-box" style="width: 320px; height: 16px;"></div>
+        </div>
+        <div class="skeleton-box" style="width: 120px; height: 36px;"></div>
+      </div>
+
+      <!-- TABS -->
+      <div class="profile-tabs" id="profile-tabs-bar">
+        <button class="profile-tab-btn active" data-tab="posts">[01] POSTS</button>
+        <button class="profile-tab-btn" data-tab="followers">[02] FOLLOWERS</button>
+        <button class="profile-tab-btn" data-tab="following">[03] FOLLOWING</button>
+        <button class="profile-tab-btn" id="tab-btn-outreach" data-tab="outreach" style="display: none;">[04] MY OUTREACH</button>
+        <button class="profile-tab-btn" id="tab-btn-settings" data-tab="settings" style="display: none;">[05] EDIT & PRIVACY</button>
+      </div>
+
+      <!-- TAB CONTENTS -->
+      <div id="tab-content-area">
+        <div class="hairline-card" style="padding: 30px;">
+          <div class="skeleton-box" style="height: 18px; width: 40%; margin-bottom: 12px;"></div>
+          <div class="skeleton-box" style="height: 14px; width: 80%;"></div>
+        </div>
+      </div>
+    </main>
+
+    <div id="shared-footer-container"></div>
+  </div>
+
+  <script src="/js/ui.js"></script>
+  <script src="/js/api.js"></script>
+  <script type="module" src="/js/avatar.js"></script>
+  <script type="module" src="/js/image-modal.js"></script>
+  <script type="module" src="/js/page-profile.js"></script>
+</body>
+</html>

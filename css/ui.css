@@ -1,0 +1,510 @@
+/* ==============================================================================
+   NOVA SPACE OBSERVATORY — THEMED UI SYSTEM (css/ui.css)
+   Aesthetic: 2px corners, 1px hairline borders, dark glassmorphism, no emoji.
+   ============================================================================== */
+
+:root {
+  --ui-bg-glass: rgba(6, 12, 24, 0.92);
+  --ui-bg-glass-solid: rgba(8, 16, 32, 0.98);
+  --ui-border-hairline: 1px solid rgba(92, 200, 255, 0.16);
+  --ui-border-active: 1px solid rgba(92, 200, 255, 0.45);
+  --ui-accent-cyan: #5cc8ff;
+  --ui-accent-success: #10b981;
+  --ui-accent-warning: #f59e0b;
+  --ui-accent-danger: #ef4444;
+  --ui-text-main: #f0f4fc;
+  --ui-text-muted: #8ca3c7;
+  --ui-text-mono: #6885ab;
+  --ui-radius-tech: 2px;
+  --ui-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --ui-font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace;
+}
+
+/* ==============================================================================
+   1. GLOBAL TOP PROGRESS BAR
+   ============================================================================== */
+#nova-global-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  width: 0%;
+  background: var(--ui-accent-cyan);
+  box-shadow: 0 0 10px var(--ui-accent-cyan), 0 0 4px #fff;
+  z-index: 10000;
+  transition: width 0.2s ease, opacity 0.3s ease;
+  pointer-events: none;
+}
+
+/* ==============================================================================
+   2. OFFLINE / ONLINE TELEMETRY BANNER
+   ============================================================================== */
+#nova-network-banner {
+  position: fixed;
+  top: 64px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-100%);
+  z-index: 9999;
+  padding: 6px 18px;
+  font-family: var(--ui-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-radius: var(--ui-radius-tech);
+  border: 1px solid;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+}
+
+#nova-network-banner.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#nova-network-banner.offline {
+  background: rgba(239, 68, 68, 0.18);
+  border-color: var(--ui-accent-danger);
+  color: #fca5a5;
+  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3);
+}
+
+#nova-network-banner.online {
+  background: rgba(16, 185, 129, 0.18);
+  border-color: var(--ui-accent-success);
+  color: #6ee7b7;
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+}
+
+/* ==============================================================================
+   3. THEMED TOAST NOTIFICATION CONTAINER & TOASTS
+   ============================================================================== */
+#nova-toast-container {
+  position: fixed;
+  top: 80px;
+  right: 24px;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+  max-width: 420px;
+  width: calc(100vw - 32px);
+}
+
+@media (max-width: 768px) {
+  #nova-toast-container {
+    top: 16px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: calc(100vw - 32px);
+    max-width: 380px;
+  }
+}
+
+.nova-toast {
+  position: relative;
+  pointer-events: auto;
+  background: var(--ui-bg-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: var(--ui-border-hairline);
+  border-radius: var(--ui-radius-tech);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8), 0 0 1px rgba(92, 200, 255, 0.2);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+  animation: nova-toast-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes nova-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nova-toast {
+    animation: none;
+    transition: opacity 0.15s ease;
+  }
+}
+
+.nova-toast-inner {
+  display: flex;
+  align-items: flex-start;
+  padding: 12px 14px 14px;
+  gap: 12px;
+}
+
+.nova-toast-glyph-badge {
+  font-family: var(--ui-font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 3px 6px;
+  border-radius: var(--ui-radius-tech);
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.nova-toast-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.nova-toast-title {
+  font-family: var(--ui-font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+  margin-bottom: 2px;
+}
+
+.nova-toast-message {
+  font-family: var(--ui-font-sans);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ui-text-muted);
+  word-break: break-word;
+}
+
+.nova-toast-close {
+  background: transparent;
+  border: none;
+  color: var(--ui-text-mono);
+  font-family: var(--ui-font-mono);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: var(--ui-radius-tech);
+  transition: color 0.15s;
+  flex-shrink: 0;
+}
+
+.nova-toast-close:hover, .nova-toast-close:focus-visible {
+  color: #fff;
+  outline: none;
+}
+
+/* Toast Progress Bar */
+.nova-toast-progress-track {
+  height: 2px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.06);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+.nova-toast-progress-bar {
+  height: 100%;
+  width: 100%;
+  transform-origin: left center;
+  transition: transform linear;
+}
+
+/* Type variations */
+.nova-toast.success {
+  border-left: 3px solid var(--ui-accent-success);
+}
+.nova-toast.success .nova-toast-glyph-badge {
+  background: rgba(16, 185, 129, 0.16);
+  color: var(--ui-accent-success);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+.nova-toast.success .nova-toast-progress-bar {
+  background: var(--ui-accent-success);
+  box-shadow: 0 0 6px var(--ui-accent-success);
+}
+
+.nova-toast.error {
+  border-left: 3px solid var(--ui-accent-danger);
+}
+.nova-toast.error .nova-toast-glyph-badge {
+  background: rgba(239, 68, 68, 0.16);
+  color: var(--ui-accent-danger);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+.nova-toast.error .nova-toast-progress-bar {
+  background: var(--ui-accent-danger);
+  box-shadow: 0 0 6px var(--ui-accent-danger);
+}
+
+.nova-toast.warning {
+  border-left: 3px solid var(--ui-accent-warning);
+}
+.nova-toast.warning .nova-toast-glyph-badge {
+  background: rgba(245, 158, 11, 0.16);
+  color: var(--ui-accent-warning);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+.nova-toast.warning .nova-toast-progress-bar {
+  background: var(--ui-accent-warning);
+  box-shadow: 0 0 6px var(--ui-accent-warning);
+}
+
+.nova-toast.info {
+  border-left: 3px solid var(--ui-accent-cyan);
+}
+.nova-toast.info .nova-toast-glyph-badge {
+  background: rgba(92, 200, 255, 0.16);
+  color: var(--ui-accent-cyan);
+  border: 1px solid rgba(92, 200, 255, 0.35);
+}
+.nova-toast.info .nova-toast-progress-bar {
+  background: var(--ui-accent-cyan);
+  box-shadow: 0 0 6px var(--ui-accent-cyan);
+}
+
+/* ==============================================================================
+   4. THEMED CONFIRM & PROMPT MODALS
+   ============================================================================== */
+.nova-ui-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(2, 4, 10, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: nova-modal-fade 0.2s ease forwards;
+}
+
+@keyframes nova-modal-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.nova-ui-modal-window {
+  width: 100%;
+  max-width: 480px;
+  background: var(--ui-bg-glass-solid);
+  border: var(--ui-border-hairline);
+  border-radius: var(--ui-radius-tech);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.9), 0 0 1px rgba(92, 200, 255, 0.3);
+  padding: 24px;
+  position: relative;
+  animation: nova-modal-scale 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes nova-modal-scale {
+  from { transform: scale(0.96) translateY(-8px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.nova-ui-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.nova-ui-modal-tag {
+  font-family: var(--ui-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--ui-accent-cyan);
+  text-transform: uppercase;
+}
+
+.nova-ui-modal-tag.danger {
+  color: var(--ui-accent-danger);
+}
+
+.nova-ui-modal-title {
+  font-family: var(--ui-font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.nova-ui-modal-body {
+  font-family: var(--ui-font-sans);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ui-text-muted);
+  margin-bottom: 20px;
+  word-break: break-word;
+}
+
+.nova-ui-modal-input {
+  width: 100%;
+  background: rgba(3, 7, 16, 0.85);
+  border: var(--ui-border-hairline);
+  border-radius: var(--ui-radius-tech);
+  padding: 10px 14px;
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  margin-bottom: 20px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.nova-ui-modal-input:focus {
+  border-color: var(--ui-accent-cyan);
+  box-shadow: 0 0 10px rgba(92, 200, 255, 0.2);
+}
+
+.nova-ui-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.nova-ui-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 18px;
+  font-family: var(--ui-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  border-radius: var(--ui-radius-tech);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.nova-ui-btn-cancel {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--ui-text-muted);
+  border: var(--ui-border-hairline);
+}
+
+.nova-ui-btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.nova-ui-btn-confirm {
+  background: var(--ui-accent-cyan);
+  color: #02040a;
+  border: 1px solid var(--ui-accent-cyan);
+  font-weight: 700;
+}
+
+.nova-ui-btn-confirm:hover {
+  background: #75d4ff;
+  box-shadow: 0 0 14px rgba(92, 200, 255, 0.35);
+}
+
+.nova-ui-btn-danger {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  border: 1px solid var(--ui-accent-danger);
+  font-weight: 700;
+}
+
+.nova-ui-btn-danger:hover {
+  background: var(--ui-accent-danger);
+  color: #fff;
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.4);
+}
+
+/* ==============================================================================
+   5. INLINE FIELD ERRORS & FORM BANNERS
+   ============================================================================== */
+.has-field-error {
+  border-color: var(--ui-accent-danger) !important;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.3) !important;
+}
+
+.nova-field-error-msg {
+  font-family: var(--ui-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--ui-accent-danger);
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  animation: nova-modal-fade 0.2s ease forwards;
+}
+
+.nova-form-banner {
+  padding: 10px 14px;
+  border-radius: var(--ui-radius-tech);
+  font-family: var(--ui-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nova-form-banner.error {
+  background: rgba(239, 68, 68, 0.14);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+}
+
+.nova-form-banner.success {
+  background: rgba(16, 185, 129, 0.14);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #6ee7b7;
+}
+
+.nova-form-banner.warning {
+  background: rgba(245, 158, 11, 0.14);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fcd34d;
+}
+
+/* ==============================================================================
+   6. BUTTON SPINNER & LOADING STATES
+   ============================================================================== */
+.btn-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: btn-spin-anim 0.75s linear infinite;
+  vertical-align: middle;
+}
+
+@keyframes btn-spin-anim {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Skeleton Loading utility */
+.nova-skeleton {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.03) 25%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.03) 75%);
+  background-size: 200% 100%;
+  animation: nova-skeleton-shimmer 1.6s infinite ease-in-out;
+  border-radius: var(--ui-radius-tech);
+}
+
+@keyframes nova-skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

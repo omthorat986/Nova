@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NOVA // Mission Control Contact</title>
+  <meta name="description" content="Direct communications conduit to NOVA Mission Control, observatory maintainers, and security team." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%2302040A' stroke='%235CC8FF' stroke-width='4'/><circle cx='50' cy='50' r='12' fill='%235CC8FF'/></svg>" />
+  <link rel="stylesheet" href="/css/social.css" />
+  <link rel="stylesheet" href="/css/ui.css" />
+  <meta name="csrf-token" content="" />
+  <style>
+    .contact-container {
+      max-width: 640px;
+      margin: 40px auto 80px;
+      padding: 32px;
+      background: var(--bg-card);
+      border: var(--border-hairline);
+      border-radius: var(--radius-tech);
+      backdrop-filter: blur(16px);
+    }
+  </style>
+</head>
+<body>
+  <canvas id="starfield-canvas"></canvas>
+
+  <div class="page-wrapper">
+    <div id="shared-navbar-container"></div>
+
+    <main class="main-container">
+      <div class="contact-container">
+        <div class="mono-label" style="color: var(--accent-cyan); margin-bottom: 8px;">// COMMUNICATIONS CONDUIT</div>
+        <h1 class="page-title" style="font-size: 24px; margin-bottom: 12px;">MISSION CONTROL CONTACT</h1>
+        <p style="color: var(--text-muted); font-size: 13px; line-height: 1.6; margin-bottom: 24px;">
+          Direct transmissions to observatory systems engineering, scientific curation board, and responsible security disclosure officers.
+        </p>
+
+        <div style="display: grid; gap: 16px; margin-bottom: 28px;">
+          <div class="hairline-card" style="padding: 16px;">
+            <div class="mono-label" style="color: var(--accent-gold); font-size: 10px;">SECURITY VULNERABILITY DISCLOSURE</div>
+            <div style="font-size: 13px; font-weight: 600; color: #fff; margin-top: 4px;">security@nova.space</div>
+            <div class="mono-sublabel" style="margin-top: 2px;">PGP KEY ID: 0x8F9A2B4C // ENCRYPTED INBOX</div>
+          </div>
+
+          <div class="hairline-card" style="padding: 16px;">
+            <div class="mono-label" style="color: var(--accent-cyan); font-size: 10px;">ASTROPHYSICAL DATA & CURATION BOARD</div>
+            <div style="font-size: 13px; font-weight: 600; color: #fff; margin-top: 4px;">curation@nova.space</div>
+            <div class="mono-sublabel" style="margin-top: 2px;">FOR OBSERVATION PEER-REVIEW & DATA CATALOGING</div>
+          </div>
+
+          <div class="hairline-card" style="padding: 16px;">
+            <div class="mono-label" style="font-size: 10px;">GENERAL INQUIRIES & OPERATIONS</div>
+            <div style="font-size: 13px; font-weight: 600; color: #fff; margin-top: 4px;">ground-station@nova.space</div>
+            <div class="mono-sublabel" style="margin-top: 2px;">TELEMETRY LINK: ACTIVE (09:00 - 21:00 UTC)</div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+          <a href="/" class="btn-tech btn-tech-primary">[RETURN TO BASE]</a>
+          <a href="/terms" class="btn-tech btn-tech-secondary">[TERMS OF USE]</a>
+          <a href="/privacy" class="btn-tech btn-tech-secondary">[PRIVACY PROTOCOL]</a>
+        </div>
+      </div>
+    </main>
+
+    <div id="shared-footer-container"></div>
+  </div>
+
+  <script src="/js/ui.js"></script>
+  <script src="/js/api.js"></script>
+  <script type="module" src="/js/page-404.js"></script>
+</body>
+</html>

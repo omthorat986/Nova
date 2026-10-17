@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NOVA // Observer Access Portal</title>
+  <meta name="description" content="Secure authentication portal for NOVA deep space observers and astrophysicists." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%2302040A' stroke='%235CC8FF' stroke-width='4'/><circle cx='50' cy='50' r='12' fill='%235CC8FF'/></svg>" />
+  <link rel="stylesheet" href="/css/social.css" />
+  <link rel="stylesheet" href="/css/ui.css" />
+  <meta name="csrf-token" content="" />
+  <style>
+    .auth-container {
+      max-width: 480px;
+      margin: 40px auto 60px;
+      width: 100%;
+    }
+    .auth-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      margin-bottom: 24px;
+      border-bottom: var(--border-hairline);
+    }
+    .auth-tab-btn {
+      background: transparent;
+      border: none;
+      padding: 12px 16px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .auth-tab-btn.active {
+      color: var(--accent-cyan);
+      font-weight: 600;
+    }
+    .auth-tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--accent-cyan);
+      box-shadow: 0 0 10px var(--accent-cyan);
+    }
+    .strength-meter {
+      height: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-tech);
+      margin-top: 6px;
+      overflow: hidden;
+      display: flex;
+    }
+    .strength-bar {
+      height: 100%;
+      width: 0%;
+      transition: all 0.3s ease;
+    }
+    .field-hint-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
+    }
+    .field-hint {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+    .privacy-notice {
+      background: rgba(92, 200, 255, 0.04);
+      border-left: 2px solid var(--accent-cyan);
+      padding: 10px 14px;
+      margin-bottom: 20px;
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+    .privacy-notice strong {
+      color: var(--accent-cyan);
+      font-family: var(--font-mono);
+      display: block;
+      margin-bottom: 2px;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="starfield-canvas"></canvas>
+
+  <div class="page-wrapper">
+    <div id="shared-navbar-container"></div>
+
+    <main class="main-container">
+      <div class="auth-container">
+        <div class="hairline-card">
+          <div class="card-header-bar">
+            <div>
+              <span class="mono-label">// ACCESS CONTROL</span>
+              <h1 class="page-title" style="font-size: 20px; margin-top: 4px;">OBSERVER ACCESS PORTAL</h1>
+            </div>
+            <span class="brand-orbital-icon"></span>
+          </div>
+
+          <div class="auth-tabs">
+            <button type="button" class="auth-tab-btn active" id="tab-login-btn">[01] LOGIN</button>
+            <button type="button" class="auth-tab-btn" id="tab-register-btn">[02] REGISTER</button>
+          </div>
+
+          <!-- LOGIN FORM -->
+          <form id="login-form">
+            <div class="form-group">
+              <label class="form-label" for="login-username">OBSERVER CALLSIGN OR EMAIL</label>
+              <input type="text" class="form-input" id="login-username" placeholder="e.g. carl_sagan" required autocomplete="username" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="login-password">ENCRYPTED KEY (PASSWORD)</label>
+              <input type="password" class="form-input" id="login-password" placeholder="••••••••••••" required autocomplete="current-password" />
+            </div>
+
+            <button type="submit" class="btn-tech btn-tech-primary" style="width: 100%; margin-top: 8px;">
+              <span>AUTHENTICATE</span>
+              <span class="mono-label">SIGN IN →</span>
+            </button>
+          </form>
+
+          <!-- REGISTER FORM -->
+          <form id="register-form" style="display: none;">
+            <div class="privacy-notice">
+              <strong>// ZERO-PII ARCHITECTURE ASSURANCE</strong>
+              Full name & email are encrypted and kept strictly confidential. Only your public nickname is ever visible to peers.
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="reg-name">
+                FULL NAME <span class="mono-label" style="color: var(--text-mono);">(PRIVATE)</span>
+              </label>
+              <input type="text" class="form-input" id="reg-name" placeholder="Dr. Eleanor Arroway" required autocomplete="name" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="reg-nickname">
+                NICKNAME CALLSIGN <span class="mono-label">(PUBLIC IDENTIFIER)</span>
+              </label>
+              <input type="text" class="form-input" id="reg-nickname" placeholder="e.g. stargazer_99" maxlength="20" required autocomplete="username" />
+              <div class="field-hint-row">
+                <span class="field-hint">3-20 chars: letters, numbers, underscore</span>
+                <span class="field-hint" id="nick-availability" style="font-weight: 600;"></span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="reg-email">
+                EMAIL ADDRESS <span class="mono-label" style="color: var(--text-mono);">(PRIVATE)</span>
+              </label>
+              <input type="email" class="form-input" id="reg-email" placeholder="eleanor@seti.org" required autocomplete="email" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="reg-password">SECURE KEY (PASSWORD)</label>
+              <input type="password" class="form-input" id="reg-password" placeholder="Min 8 characters" minlength="8" required autocomplete="new-password" />
+              <div class="strength-meter">
+                <div class="strength-bar" id="strength-bar"></div>
+              </div>
+              <div class="field-hint-row">
+                <span class="field-hint">Strength requirement: 8+ chars</span>
+                <span class="field-hint" id="strength-label"></span>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-tech btn-tech-primary" id="btn-submit-reg" style="width: 100%; margin-top: 8px;">
+              <span>INITIALIZE OBSERVER CALLSIGN</span>
+              <span class="mono-label">REGISTER →</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </main>
+
+    <div id="shared-footer-container"></div>
+  </div>
+
+  <script src="/js/ui.js"></script>
+  <script src="/js/api.js"></script>
+  <script type="module" src="/js/page-auth.js"></script>
+</body>
+</html>

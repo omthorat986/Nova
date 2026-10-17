@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NOVA — Space Exploration | Explore the Unknown</title>
+  
+  <!-- SEO & Social Meta Tags -->
+  <meta name="description" content="An interactive, cinematic spacecraft and observatory interface exploring planets, solar systems, galaxies, nebulae, black holes, and deep-space missions." />
+  <meta name="keywords" content="space exploration, astronomy, 3D planets, solar system, galaxies, black hole, James Webb, Apollo, NASA, cosmos" />
+  <meta name="theme-color" content="#02040A" />
+
+  <!-- OpenGraph / Social Sharing -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="NOVA — Space Exploration | Explore the Unknown" />
+  <meta property="og:description" content="Enter an interactive spacecraft and observatory interface exploring the infinite cosmos." />
+  <meta property="og:image" content="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1200&auto=format&fit=crop" />
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/avatar.css" />
+  <link rel="stylesheet" href="css/ui.css" />
+  <meta name="csrf-token" content="" />
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%2302040A' stroke='%235CC8FF' stroke-width='4'/><circle cx='50' cy='50' r='12' fill='%235CC8FF'/></svg>" />
+
+  <!-- Structured Data JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "EducationalOrganization",
+    "name": "NOVA Space Exploration",
+    "description": "Cinematic interactive digital planetarium and astrophysical observatory.",
+    "url": "https://nova.space"
+  }
+  </script>
+</head>
+<body>
+
+  <!-- Cinematic Genesis Loading Sequence -->
+  <div class="cinematic-intro-overlay" id="cinematic-intro-overlay">
+    <button class="intro-skip-btn" id="intro-skip-btn">SKIP INTRO ↵</button>
+    <div class="intro-genesis-star" id="intro-genesis-star"></div>
+    <div class="intro-progress-container">
+      <div class="intro-status-row">
+        <span id="intro-status-text">INITIALIZING DEEP SPACE</span>
+        <span id="intro-percent-text">0%</span>
+      </div>
+      <div class="intro-progress-track">
+        <div class="intro-progress-fill" id="intro-progress-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Integrated Spacecraft Visor Navigation -->
+  <header class="nova-navbar" id="nova-sticky-navbar">
+    <a href="#hero-section" class="navbar-brand">
+      <div class="brand-orbital-icon"></div>
+      <div class="brand-text-block">
+        <span class="brand-name">NOVA</span>
+        <span class="brand-tagline">DEEP SPACE OBSERVATORY</span>
+      </div>
+    </a>
+
+    <nav class="navbar-navigation" aria-label="Main Navigation">
+      <ul class="navbar-nav-links">
+        <!-- 1. COSMOS -->
+        <li class="nav-dropdown-item">
+          <button class="nav-dropdown-trigger" aria-expanded="false" aria-haspopup="true">
+            <span>COSMOS</span>
+            <span class="nav-caret">▾</span>
+          </button>
+          <div class="nav-dropdown-menu">
+            <a href="#universe-scale-section" class="nav-dropdown-link">
+              <span class="nav-code">// 01</span>
+              <span class="nav-title">THE UNIVERSE</span>
+            </a>
+            <a href="#galaxy-explorer-section" class="nav-dropdown-link">
+              <span class="nav-code">// 04</span>
+              <span class="nav-title">GALAXIES</span>
+            </a>
+            <a href="#nebula-section" class="nav-dropdown-link">
+              <span class="nav-code">// 05</span>
+              <span class="nav-title">NEBULAE</span>
+            </a>
+            <a href="#blackhole-section" class="nav-dropdown-link">
+              <span class="nav-code">// 06</span>
+              <span class="nav-title">SINGULARITY</span>
+            </a>
+          </div>
+        </li>
+
+        <!-- 2. PLANETARY -->
+        <li class="nav-dropdown-item">
+          <button class="nav-dropdown-trigger" aria-expanded="false" aria-haspopup="true">
+            <span>PLANETARY</span>
+            <span class="nav-caret">▾</span>
+          </button>
+          <div class="nav-dropdown-menu">
+            <a href="#solarsystem-section" class="nav-dropdown-link">
+              <span class="nav-code">// 03</span>
+              <span class="nav-title">SOLAR SYSTEM</span>
+            </a>
+            <a href="#planet-explorer-section" class="nav-dropdown-link">
+              <span class="nav-code">// 02</span>
+              <span class="nav-title">WORLDS</span>
+            </a>
+          </div>
+        </li>
+
+        <!-- 3. OPERATIONS -->
+        <li class="nav-dropdown-item">
+          <button class="nav-dropdown-trigger" aria-expanded="false" aria-haspopup="true">
+            <span>OPERATIONS</span>
+            <span class="nav-caret">▾</span>
+          </button>
+          <div class="nav-dropdown-menu">
+            <a href="#missions-section" class="nav-dropdown-link">
+              <span class="nav-code">// 07</span>
+              <span class="nav-title">MISSIONS</span>
+            </a>
+            <a href="#observatory-section" class="nav-dropdown-link">
+              <span class="nav-code">// 08</span>
+              <span class="nav-title">OBSERVATORY</span>
+            </a>
+            <a href="#timeline-section" class="nav-dropdown-link">
+              <span class="nav-code">// 10</span>
+              <span class="nav-title">TIMELINE</span>
+            </a>
+          </div>
+        </li>
+
+        <!-- 4. ARCHIVES -->
+        <li class="nav-dropdown-item">
+          <button class="nav-dropdown-trigger" aria-expanded="false" aria-haspopup="true">
+            <span>ARCHIVES</span>
+            <span class="nav-caret">▾</span>
+          </button>
+          <div class="nav-dropdown-menu">
+            <a href="#gallery-section" class="nav-dropdown-link">
+              <span class="nav-code">// 09</span>
+              <span class="nav-title">SKY GALLERY</span>
+            </a>
+            <a href="/social" class="nav-dropdown-link">
+              <span class="nav-code">// 10</span>
+              <span class="nav-title">NOVA SOCIAL</span>
+            </a>
+            <a href="/agencies" class="nav-dropdown-link">
+              <span class="nav-code">// 11</span>
+              <span class="nav-title">SPACE AGENCIES</span>
+            </a>
+            <a href="#resources-section" class="nav-dropdown-link">
+              <span class="nav-code">// 12</span>
+              <span class="nav-title">DATA LOGS & ARCHIVES</span>
+            </a>
+          </div>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="navbar-actions">
+      <!-- User Authentication & Session Control -->
+      <a href="/login" class="hud-pill-btn" id="hud-auth-btn" title="Observer Authentication & Access Portal" style="text-decoration:none">
+        <span class="btn-telemetry-glyph">⬡</span>
+        <span id="hud-auth-label">[AUTH // LOGIN]</span>
+      </a>
+
+      <!-- NOVA Social Module Link -->
+      <a href="/social" class="hud-pill-btn" id="hud-social-btn" title="NOVA Social Space Feed & Agency Dispatches" style="text-decoration:none">
+        <span class="btn-telemetry-glyph">◎</span>
+        <span>[SOCIAL]</span>
+      </a>
+
+      <!-- Space Agencies Directory Link -->
+      <a href="/agencies" class="hud-pill-btn" id="hud-agencies-btn" title="Space Agency Directory, Telemetry & Outreach" style="text-decoration:none">
+        <span class="btn-telemetry-glyph">⬢</span>
+        <span>[AGENCIES]</span>
+      </a>
+
+      <!-- Search Omnibox Trigger -->
+      <button class="hud-pill-btn" id="search-trigger-btn" title="Search the cosmos (Ctrl+K or /)">
+        <span class="btn-telemetry-glyph">⌕</span>
+        <span>[SEARCH // ⌘K]</span>
+      </button>
+
+      <!-- Web Audio Sound Synthesizer Toggle -->
+      <button class="hud-pill-btn" id="hud-sound-toggle-btn" title="Toggle synthesized space audio">
+        <span class="btn-telemetry-glyph">∿</span>
+        <span class="sound-btn-label">[AUDIO // MUTED]</span>
+      </button>
+
+      <!-- Experience Mode / Data Mode Toggle -->
+      <button class="hud-pill-btn" id="hud-mode-toggle-btn" title="Toggle Experience vs Data Mode">
+        <span class="btn-telemetry-glyph">⌬</span>
+        <span class="mode-toggle-text">[MODE // EXP]</span>
+      </button>
+
+      <!-- Mobile Hamburger Menu Button -->
+      <button class="mobile-menu-btn" id="mobile-menu-trigger-btn" aria-label="Open menu">
+        ☰
+      </button>
+    </div>
+  </header>
+
+  <!-- Floating Scroll Progress Indicator -->
+  <div class="scroll-section-tracker" id="scroll-section-indicator">
+    <span class="curr-num">01</span>
+    <span class="divider">/</span>
+    <span class="total-num">12</span>
+  </div>
+
+  <main>
+    <!-- 01: HERO SECTION (FULL-BLEED CINEMATIC EARTH PRESENCE) -->
+    <section class="hero-section" id="hero-section" data-section-num="01" data-section-title="Enter Space">
+      <!-- Full-Bleed 3D Canvas Container -->
+      <div class="hero-3d-fullbleed" id="hero-3d-canvas-container"></div>
+
+      <!-- Precision Spacecraft HUD Crosshairs & Telemetry -->
+      <div class="hud-corner hud-top-left">
+        <div class="hud-crosshair">+</div>
+        <div class="hud-meta-row">LOC // 00°00'00" • ECLIPTIC PLANE</div>
+        <div class="hud-meta-row">ALT // 420.5 KM LEO HIGH-ORBIT</div>
+      </div>
+
+      <div class="hud-corner hud-top-right">
+        <div class="hud-crosshair">+</div>
+        <div class="hud-meta-row">SYS // <span class="hud-status-active">● TELEMETRY NOMINAL</span></div>
+        <div class="hud-meta-row">SPECTRAL // HIGH-RESOLUTION VIS/NIR</div>
+      </div>
+
+      <div class="hud-corner hud-bottom-left">
+        <div class="hud-crosshair">+</div>
+        <div class="hud-meta-row">TARGET // <span style="color:var(--text-pure); font-weight:500">EARTH (TERRA)</span></div>
+        <div class="hud-meta-row">DIST // 1.000 AU • CLASS // TERRESTRIAL HAVEN</div>
+      </div>
+
+      <div class="hud-corner hud-bottom-right">
+        <div class="hud-crosshair">+</div>
+        <div class="hud-meta-row">VELOCITY // 29.78 KM/S</div>
+        <div class="hud-meta-row">AXIAL TILT // 23.44°</div>
+      </div>
+
+      <!-- Left Hero Narrative Content -->
+      <div class="hero-content">
+        <div class="hero-metadata-header">
+          <span class="meta-tag-prefix">// 00.00</span>
+          <span>ORBITAL RECONNAISSANCE</span>
+        </div>
+
+        <h1 class="hero-title">
+          <span class="hero-title-light">EXPLORE THE</span>
+          <span class="hero-title-bold">UNKNOWN</span>
+        </h1>
+
+        <p class="hero-desc">
+          Beyond the thin atmosphere lies an immense cosmos measured not in miles, but in light-years.
+        </p>
+
+        <div class="hero-cta-group">
+          <a href="#universe-scale-section" class="btn-spacecraft-primary" id="hero-primary-cta">
+            <span>BEGIN EXPLORATION</span>
+            <span class="btn-telemetry-tag">01 // COSMOS →</span>
+          </a>
+          <a href="#planet-explorer-section" class="btn-spacecraft-secondary" id="hero-secondary-cta">
+            <span>VIEW WORLDS</span>
+            <span class="arrow-glyph">→</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Minimal Scroll Down Indicator -->
+      <div class="hero-scroll-indicator">
+        <span class="scroll-tag">SCROLL TO TRAVERSE</span>
+        <div class="scroll-line-anim"></div>
+      </div>
+    </section>
+
+    <!-- 02: POWERS OF TEN SCALE SECTION -->
+    <section id="universe-scale-section" data-section-num="02" data-section-title="Scale of the Universe">
+      <div class="section-label">// 01 — THE UNIVERSE</div>
+      <h2 class="section-title">A UNIVERSE WITHOUT LIMITS</h2>
+      <p class="section-subtitle">
+        From the smallest particles to galactic filaments spanning hundreds of millions of light-years, space exists on scales beyond everyday human comprehension.
+      </p>
+
+      <div class="scale-visualizer-container">
+        <!-- Scale Dynamic Graphic Circle -->
+        <div class="scale-visual-col">
+          <div class="scale-visual-circle" id="scale-visual-circle">
+            <span class="scale-center-icon">⊙</span>
+          </div>
+        </div>
+
+        <!-- Scale Telemetry & Interactive Slider -->
+        <div class="scale-data-col">
+          <div class="scale-exponent-badge" id="scale-exponent-badge">10⁰ m</div>
+          <h3 class="scale-title-text" id="scale-title-text">THE OBSERVER</h3>
+          <div class="scale-unit-text" id="scale-unit-text">1 Meter</div>
+          <p class="scale-desc-text" id="scale-desc-text">
+            At the human scale, physical reality is governed by electromagnetic interactions between atoms, terrestrial gravity, and the sensory apparatus of biological consciousness.
+          </p>
+
+          <div class="scale-ticks-bar" id="scale-ticks-bar"></div>
+          <input type="range" class="scale-slider-range" id="scale-slider" min="0" max="7" value="0" step="1" />
+
+          <div class="scale-controls-row">
+            <button class="viewport-ctrl-btn" id="scale-prev-btn" disabled>← ZOOM IN</button>
+            <button class="viewport-ctrl-btn" id="scale-next-btn">ZOOM OUT →</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03: PLANET EXPLORER ("CHOOSE YOUR WORLD") -->
+    <section class="planet-explorer-section" id="planet-explorer-section" data-section-num="03" data-section-title="Planet Explorer">
+      <div class="section-label">// 02 — WORLDS</div>
+      <h2 class="section-title">CHOOSE YOUR WORLD</h2>
+      <p class="section-subtitle">
+        Explore the celestial geology, atmospheres, and orbital parameters of our Solar System.
+      </p>
+
+      <!-- Planet Horizontal Selector -->
+      <nav class="planet-selector-nav" id="planet-selector-nav"></nav>
+
+      <div class="planet-stage-layout">
+        <!-- 3D Planet Viewport -->
+        <div class="planet-3d-viewport-wrapper">
+          <div class="planet-drag-hint" id="planet-drag-hint">DRAG TO ROTATE WORLD</div>
+          <div class="planet-3d-canvas" id="planet-3d-viewport"></div>
+
+          <!-- Viewport Controls -->
+          <div class="planet-viewport-controls">
+            <button class="viewport-ctrl-btn active" id="toggle-atmosphere-btn">ATMOSPHERE: ON</button>
+            <button class="viewport-ctrl-btn" id="reset-planet-camera-btn">RESET ORIENTATION</button>
+          </div>
+        </div>
+
+        <!-- Telemetry & Specs Panel -->
+        <div class="planet-telemetry-panel">
+          <div class="planet-telemetry-subtitle" id="planet-telemetry-subtitle">THIRD PLANET FROM THE SUN</div>
+          <h3 class="planet-telemetry-name" id="planet-telemetry-name">EARTH</h3>
+          <p class="planet-telemetry-desc" id="planet-telemetry-desc">
+            The cradle of known life, Earth is an oceanic world shielded by a vigorous magnetosphere and nitrogen-oxygen atmosphere.
+          </p>
+
+          <div class="telemetry-specs-grid">
+            <div class="spec-item">
+              <span class="spec-label">DISTANCE FROM SUN</span>
+              <span class="spec-val" id="telemetry-distance">149.6M km</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">EQUATORIAL DIAMETER</span>
+              <span class="spec-val" id="telemetry-diameter">12,742 km</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">DAY DURATION</span>
+              <span class="spec-val" id="telemetry-day">23.93 hours</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">ORBITAL PERIOD</span>
+              <span class="spec-val" id="telemetry-year">365.25 days</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">SURFACE GRAVITY</span>
+              <span class="spec-val" id="telemetry-gravity">1.00 G</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">NATURAL SATELLITES</span>
+              <span class="spec-val" id="telemetry-moons">1 Moon</span>
+            </div>
+          </div>
+
+          <div class="atmo-density-wrapper">
+            <span class="spec-label">ATMOSPHERIC DENSITY</span>
+            <div class="atmo-bar-track">
+              <div class="atmo-bar-fill" id="telemetry-atmo-bar"></div>
+            </div>
+            <span class="spec-val" style="font-size:12px" id="telemetry-atmo-text">Optimal (1.013 bar)</span>
+          </div>
+
+          <ul class="planet-features-list" id="planet-features-list"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04: INTERACTIVE SOLAR SYSTEM -->
+    <section id="solarsystem-section" data-section-num="04" data-section-title="Solar System">
+      <div class="section-label">// 03 — SOLAR SYSTEM</div>
+      <h2 class="section-title">THE GRAVITATIONAL DANCE</h2>
+      <p class="section-subtitle">
+        Eight planetary bodies revolving in silent harmony around the solar furnace.
+      </p>
+
+      <div class="solar-system-controls-bar">
+        <div class="ctrl-group">
+          <span class="ctrl-label">SCALE MODE:</span>
+          <button class="viewport-ctrl-btn active" id="solar-scale-visual-btn">VISUAL SCALE</button>
+          <button class="viewport-ctrl-btn" id="solar-scale-physical-btn">PHYSICAL SCALE</button>
+        </div>
+        <div class="ctrl-group">
+          <span class="ctrl-label">ZOOM:</span>
+          <button class="viewport-ctrl-btn" id="solar-zoom-in-btn">+ ZOOM IN</button>
+          <button class="viewport-ctrl-btn" id="solar-zoom-out-btn">- ZOOM OUT</button>
+        </div>
+        <div class="ctrl-group">
+          <span class="ctrl-label">TIME SPEED:</span>
+          <button class="viewport-ctrl-btn solar-speed-btn" data-speed="0.5">0.5×</button>
+          <button class="viewport-ctrl-btn solar-speed-btn active" data-speed="1">1.0×</button>
+          <button class="viewport-ctrl-btn solar-speed-btn" data-speed="2">2.0×</button>
+          <button class="viewport-ctrl-btn solar-speed-btn" data-speed="5">5.0×</button>
+          <button class="viewport-ctrl-btn solar-speed-btn" data-speed="0">PAUSE</button>
+        </div>
+        <div class="ctrl-group">
+          <button class="viewport-ctrl-btn" id="solar-reset-camera-btn">RESET ORBIT</button>
+        </div>
+      </div>
+
+      <div class="solar-viewport-container">
+        <div class="solar-focus-badge" id="solar-focus-badge">SYSTEM OVERVIEW</div>
+        <div class="planet-drag-hint" style="top:18px; right:18px; left:auto">DRAG TO ORBIT • SCROLL TO ZOOM</div>
+        <div id="solarsystem-3d-viewport" style="width:100%; height:100%"></div>
+      </div>
+    </section>
+
+    <!-- 05: GALAXY EXPLORER -->
+    <section id="galaxy-explorer-section" data-section-num="05" data-section-title="Galaxy Explorer">
+      <div class="section-label">// 04 — GALAXIES</div>
+      <h2 class="section-title">ISLANDS IN THE VOID</h2>
+      <p class="section-subtitle">
+        Colossal rotating whirlpools containing hundreds of billions of suns, bound by invisible halos of dark matter.
+      </p>
+
+      <div class="galaxy-selector-tabs" id="galaxy-selector-tabs"></div>
+
+      <div class="galaxy-stage-layout">
+        <div class="galaxy-viewport-wrapper">
+          <div id="galaxy-3d-viewport" style="width:100%; height:100%"></div>
+        </div>
+
+        <div class="galaxy-info-card">
+          <div class="section-label" id="galaxy-info-type">BARRED SPIRAL (SBbc)</div>
+          <h3 class="section-title" style="font-size:32px; margin-bottom:12px" id="galaxy-info-title">MILKY WAY & ANDROMEDA</h3>
+          <p class="section-subtitle" style="font-size:14px; margin-bottom:20px" id="galaxy-info-desc">
+            Spiral galaxies are dynamic rotating pinwheels characterized by a luminous central bulge, a prominent stellar bar, and curving logarithmic spiral arms.
+          </p>
+          <div class="galaxy-attrs-list" id="galaxy-info-attrs"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 06: NEBULA & STAR FORMATION -->
+    <section id="nebula-section" data-section-num="06" data-section-title="Nebulae & Star Genesis">
+      <div class="section-label">// 05 — NEBULAE</div>
+      <h2 class="section-title">BIRTHPLACES OF STARS</h2>
+      <p class="section-subtitle">
+        Dense clouds of interstellar gas and dust collapsing across millions of years to birth luminous new stars.
+      </p>
+
+      <div class="nebula-layout">
+        <!-- Volumetric Canvas Cloud -->
+        <div class="nebula-canvas-wrapper">
+          <canvas id="nebula-canvas" style="width:100%; height:100%"></canvas>
+        </div>
+
+        <!-- 6-Step Storytelling Stepper -->
+        <div class="nebula-stepper-panel">
+          <div class="section-label">STELLAR EVOLUTIONARY GENESIS</div>
+          <div class="nebula-stepper-nav" id="nebula-stepper-nav"></div>
+
+          <div class="nebula-stage-meta">
+            <div class="stage-meta-item">
+              <span class="stage-meta-label">CORE TEMPERATURE</span>
+              <span class="stage-meta-val" id="nebula-stage-temp">10 – 20 K</span>
+            </div>
+            <div class="stage-meta-item">
+              <span class="stage-meta-label">PHYSICAL SPAN</span>
+              <span class="stage-meta-val" id="nebula-stage-scale">100 Light-Years</span>
+            </div>
+          </div>
+
+          <h3 class="section-title" style="font-size:26px; margin-bottom:12px" id="nebula-stage-title">GIANT MOLECULAR CLOUD</h3>
+          <p class="section-subtitle" style="font-size:14px; margin-bottom:24px" id="nebula-stage-desc">
+            Vast, cold reservoirs of molecular hydrogen and microscopic silicate dust drift through interstellar space.
+          </p>
+
+          <div class="scale-controls-row">
+            <button class="viewport-ctrl-btn" id="nebula-prev-btn" disabled>← PREVIOUS STAGE</button>
+            <button class="viewport-ctrl-btn" id="nebula-next-btn">NEXT STAGE →</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 07: RELATIVISTIC BLACK HOLE -->
+    <section id="blackhole-section" data-section-num="07" data-section-title="Singularity">
+      <div class="section-label">// 06 — SINGULARITY</div>
+      <h2 class="section-title">WHERE LIGHT DISAPPEARS</h2>
+      <p class="section-subtitle">
+        A region of spacetime where gravitational curvature becomes extreme enough that no particle or light can escape the event horizon.
+      </p>
+
+      <div class="blackhole-toggles-bar">
+        <button class="viewport-ctrl-btn active" id="bh-toggle-horizon">EVENT HORIZON: ON</button>
+        <button class="viewport-ctrl-btn active" id="bh-toggle-disk">ACCRETION DISK: ON</button>
+        <button class="viewport-ctrl-btn active" id="bh-toggle-lensing">GRAVITATIONAL LENSING: ON</button>
+      </div>
+
+      <div class="blackhole-layout">
+        <div class="blackhole-viewport-wrapper">
+          <div id="blackhole-3d-viewport" style="width:100%; height:100%"></div>
+        </div>
+
+        <div class="planet-telemetry-panel">
+          <div class="section-label">RELATIVISTIC PARAMETERS</div>
+          <h3 class="planet-telemetry-name" style="font-size:30px">SUPERMASSIVE SINGULARITY</h3>
+          <p class="planet-telemetry-desc">
+            As matter spirals inward toward the photon sphere at near-relativistic velocities, frictional viscous heating elevates plasma temperatures to millions of Kelvin, outshining entire galaxies as an active galactic nucleus.
+          </p>
+          <div class="telemetry-specs-grid">
+            <div class="spec-item">
+              <span class="spec-label">SCHWARZSCHILD RADIUS</span>
+              <span class="spec-val">Rs = 2GM / c²</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">PHOTON SPHERE</span>
+              <span class="spec-val">1.5 × Rs</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">ORBITAL VELOCITY</span>
+              <span class="spec-val">0.992 c</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">HAWKING RADIATION</span>
+              <span class="spec-val">1.4 × 10⁻¹⁴ K</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 08: DEEP SPACE & DATA HUB -->
+    <section id="deep-space-section" data-section-num="08" data-section-title="Cosmological Data">
+      <div class="section-label">// 07 — DEEP SPACE</div>
+      <h2 class="section-title">THERE IS MORE</h2>
+      <p class="section-subtitle">
+        "The farther we look, the deeper into cosmic history we see."
+      </p>
+
+      <div class="deep-space-container">
+        <div class="cosmic-counter-card">
+          <div class="counter-num-display">
+            <span class="counter-animated-val" data-target="13.787" data-decimals="3">0</span>B
+          </div>
+          <div class="counter-unit-label">AGE OF THE UNIVERSE (YEARS)</div>
+        </div>
+        <div class="cosmic-counter-card">
+          <div class="counter-num-display">
+            <span class="counter-animated-val" data-target="93.0" data-decimals="1">0</span>B
+          </div>
+          <div class="counter-unit-label">OBSERVABLE DIAMETER (LIGHT-YEARS)</div>
+        </div>
+        <div class="cosmic-counter-card">
+          <div class="counter-num-display">
+            2×10<sup style="font-size:0.6em">22</sup>
+          </div>
+          <div class="counter-unit-label">ESTIMATED STARS IN COSMOS</div>
+        </div>
+        <div class="cosmic-counter-card">
+          <div class="counter-num-display">
+            <span class="counter-animated-val" data-target="2.725" data-decimals="3">0</span> K
+          </div>
+          <div class="counter-unit-label">COSMIC MICROWAVE BACKGROUND</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 09: MISSIONS SECTION -->
+    <section id="missions-section" data-section-num="09" data-section-title="Missions Dossier">
+      <div class="section-label">// 08 — MISSIONS</div>
+      <h2 class="section-title">WE LOOK BEYOND</h2>
+      <p class="section-subtitle">
+        Humanity's intrepid probes, space telescopes, and crewed voyages crossing interplanetary boundaries.
+      </p>
+
+      <div class="missions-filter-tabs" id="missions-filter-tabs"></div>
+      <div class="missions-grid" id="missions-grid"></div>
+    </section>
+
+    <!-- 10: OBSERVATORY & STAR MAP -->
+    <section id="observatory-section" data-section-num="10" data-section-title="Sky Observatory">
+      <div class="section-label">// 09 — OBSERVATORY</div>
+      <h2 class="section-title">SEEING THE INVISIBLE</h2>
+      <p class="section-subtitle">
+        Astronomical instruments reveal invisible emissions across the full electromagnetic spectrum.
+      </p>
+
+      <div class="wavelength-selector-bar">
+        <span class="ctrl-label" style="align-self:center; margin-right:8px">SPECTRUM:</span>
+        <button class="wavelength-btn active" data-wavelength="visible">VISIBLE LIGHT</button>
+        <button class="wavelength-btn" data-wavelength="infrared">INFRARED (JWST)</button>
+        <button class="wavelength-btn" data-wavelength="xray">X-RAY (CHANDRA)</button>
+        <button class="wavelength-btn" data-wavelength="radio">RADIO (ALMA)</button>
+        <button class="viewport-ctrl-btn active" id="toggle-constellations-btn" style="margin-left:auto">CONSTELLATIONS: ON</button>
+      </div>
+
+      <div class="observatory-layout">
+        <div class="observatory-canvas-wrapper">
+          <canvas id="observatory-canvas" style="width:100%; height:100%"></canvas>
+        </div>
+
+        <div class="observatory-inspector-card">
+          <div class="section-label" id="obs-star-const">CANIS MAJOR</div>
+          <h3 class="section-title" style="font-size:28px; margin-bottom:8px" id="obs-star-name">SIRIUS</h3>
+          <div class="scale-unit-text" id="obs-star-dist">8.60 Light-Years</div>
+
+          <div class="telemetry-specs-grid" style="margin-bottom:18px">
+            <div class="spec-item">
+              <span class="spec-label">SPECTRAL CLASS</span>
+              <span class="spec-val" style="font-size:13px" id="obs-star-spec">A1V</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">APPARENT MAGNITUDE</span>
+              <span class="spec-val" style="font-size:13px" id="obs-star-mag">-1.46</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">RIGHT ASCENSION</span>
+              <span class="spec-val" style="font-size:13px" id="obs-star-ra">06h 45m 09s</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">DECLINATION</span>
+              <span class="spec-val" style="font-size:13px" id="obs-star-dec">-16° 42′ 58″</span>
+            </div>
+          </div>
+
+          <div class="section-label" style="font-size:10px">WAVELENGTH BEHAVIOR</div>
+          <p class="scale-desc-text" style="font-size:13px; margin-bottom:14px" id="obs-wavelength-desc">
+            Brilliant blue-white dazzling illumination with intense scintillation in Earth's atmosphere.
+          </p>
+
+          <p class="scale-desc-text" style="font-size:12px; color:var(--text-dim)" id="obs-star-desc">
+            The brightest star in the night sky. Sirius is a binary system comprising a luminous A-type star and a white dwarf companion.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10.5: OBSERVER UPLOADS & SKY GALLERY -->
+    <section id="gallery-section" class="gallery-section" data-section-num="10" data-section-title="Observer Uploads">
+      <div class="section-label">// 10 — OBSERVER UPLOADS // 01</div>
+      <h2 class="section-title">NOVA SKY GALLERY</h2>
+      <p class="section-subtitle">
+        Observer astrophotography uploaded to cloud storage and verified through curator review.
+      </p>
+
+      <!-- Upload Ingestion Panel -->
+      <div class="gallery-upload-panel" id="gallery-upload-container"></div>
+
+      <!-- Curator Moderation Queue (Rendered for Curators) -->
+      <div class="gallery-curator-panel" id="curator-queue-container" style="display:none">
+        <div class="section-label" style="color:var(--accent-cyan); margin-bottom:14px">// CURATOR QUEUE • PENDING REVIEWS</div>
+        <div class="gallery-cards-grid" id="curator-cards-grid"></div>
+      </div>
+
+      <!-- Verified Public Astrophotography Archive -->
+      <div class="section-label" style="margin-top:36px; margin-bottom:14px">// VERIFIED PUBLIC ARCHIVE</div>
+      <div class="gallery-cards-grid" id="public-gallery-grid"></div>
+    </section>
+
+    <!-- 10.6: EXPLORATION TIMELINE & FUTURE CHAPTER -->
+    <section id="timeline-section" data-section-num="11" data-section-title="Timeline & The Future">
+      <div class="section-label">// 10 — TIMELINE</div>
+      <h2 class="section-title">CHRONICLES OF DISCOVERY</h2>
+      <p class="section-subtitle">
+        Four centuries of human progress from the first lens turned skyward to deep interstellar ambitions.
+      </p>
+
+      <div class="timeline-track-wrapper">
+        <div class="timeline-milestones-track" id="timeline-milestones-track"></div>
+      </div>
+
+      <div class="section-label" style="margin-top:24px">// SPECULATIVE HORIZONS</div>
+      <h3 class="section-title" style="font-size:32px">THE NEXT CHAPTER</h3>
+      <div class="future-chapter-grid" id="future-chapter-grid"></div>
+    </section>
+
+    <!-- 11: ASTRONOMICAL COMPENDIUM & ARCHIVES (USEFUL SITES & BOOKS) -->
+    <section class="resources-section" id="resources-section" data-section-num="11" data-section-title="Archives & Compendium">
+      <div class="section-label">// 11 — ARCHIVES & COMPENDIUM</div>
+      <h2 class="section-title">THE ASTRONOMICAL COMPENDIUM</h2>
+      <p class="section-subtitle">
+        Curated observatories, real-time telemetry registries, verified research archives, and seminal astrophysics literature for deeper cosmic inquiry.
+      </p>
+
+      <div class="resources-filter-bar" id="resources-filter-tabs"></div>
+
+      <div class="resources-grid" id="resources-grid"></div>
+    </section>
+
+    <!-- NARRATIVE RETURN TO EARTH (THE PALE BLUE DOT) -->
+    <section class="return-earth-section" id="return-earth-section" data-section-num="12" data-section-title="Return to Origin">
+      <div class="return-earth-canvas-wrapper" id="return-earth-canvas"></div>
+      <div class="section-label">// 12 — RETURN TO ORIGIN</div>
+      <h2 class="return-title">HOME IS ONLY THE BEGINNING</h2>
+      <p class="return-reflection-quote">
+        "One planet. One civilization. An infinite universe."
+      </p>
+      <div class="hero-cta-group" style="justify-content:center">
+        <a href="#hero-section" class="btn-spacecraft-primary">
+          <span>RE-ENTER THE COSMOS</span>
+          <span class="btn-telemetry-tag">TOP ↑</span>
+        </a>
+        <a href="#observatory-section" class="btn-spacecraft-secondary">
+          <span>SKY OBSERVATORY</span>
+          <span class="btn-telemetry-tag">STELLAR MAP</span>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <!-- Minimal Spacecraft Footer -->
+  <footer class="nova-footer" id="nova-footer">
+    <div class="footer-brand">
+      <span class="brand-name">NOVA</span>
+      <span class="footer-copy">DESIGNED FOR EXPLORATION • SCIENTIFIC PRECISION</span>
+    </div>
+    <div class="footer-telemetry">
+      <span class="hud-status-dot" id="sys-status-dot">●</span>
+      <span class="hud-status-text" id="sys-status-text">SYS // ONLINE</span>
+    </div>
+    <ul class="footer-links">
+      <li><a href="#hero-section">TOP</a></li>
+      <li><a href="#planet-explorer-section">PLANETS</a></li>
+      <li><a href="#galaxy-explorer-section">GALAXIES</a></li>
+      <li><a href="#missions-section">MISSIONS</a></li>
+      <li><a href="#observatory-section">OBSERVATORY</a></li>
+      <li><a href="#gallery-section">SKY GALLERY</a></li>
+      <li><a href="#resources-section">ARCHIVES</a></li>
+    </ul>
+  </footer>
+
+  <!-- MODALS -->
+
+  <!-- Observer Authentication & Access Modal -->
+  <div class="nova-modal-backdrop" id="auth-modal" role="dialog" aria-modal="true">
+    <div class="nova-modal-window auth-modal-window">
+      <button class="modal-close-btn" id="auth-modal-close" aria-label="Close modal">×</button>
+      <div class="section-label" id="auth-modal-label">// ACCESS CONTROL • OBSERVER PORTAL</div>
+      <h2 class="section-title" id="auth-modal-title" style="font-size:26px; margin-bottom:16px">AUTHENTICATION</h2>
+
+      <div class="auth-tabs-row">
+        <button class="auth-tab-btn active" id="auth-tab-login">LOGIN</button>
+        <button class="auth-tab-btn" id="auth-tab-register">REGISTER</button>
+      </div>
+
+      <div class="auth-feedback-banner" id="auth-feedback-banner" style="display:none"></div>
+
+      <!-- Login Form -->
+      <form id="auth-login-form" class="auth-form-block">
+        <div class="form-field-group">
+          <label class="form-field-label" for="login-username">OBSERVER CALLSIGN</label>
+          <input type="text" class="auth-text-input" id="login-username" required autocomplete="username" placeholder="Username" />
+        </div>
+        <div class="form-field-group">
+          <label class="form-field-label" for="login-password">ENCRYPTED KEY (PASSWORD)</label>
+          <input type="password" class="auth-text-input" id="login-password" required autocomplete="current-password" placeholder="••••••••" />
+        </div>
+        <button type="submit" class="btn-spacecraft-primary auth-submit-btn">
+          <span>AUTHENTICATE</span>
+          <span class="btn-telemetry-tag">SIGN IN →</span>
+        </button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="auth-register-form" class="auth-form-block" style="display:none">
+        <div class="form-field-group">
+          <label class="form-field-label" for="register-fullname">LEGAL FULL NAME [PRIVATE // ENCRYPTED]</label>
+          <input type="text" class="auth-text-input" id="register-fullname" required autocomplete="name" placeholder="Full name (Never exposed publicly)" />
+        </div>
+        <div class="form-field-group">
+          <label class="form-field-label" for="register-nickname">PUBLIC CALLSIGN / NICKNAME [3-20 CHARS]</label>
+          <input type="text" class="auth-text-input" id="register-nickname" required minlength="3" maxlength="20" autocomplete="username" placeholder="Alphanumeric & underscore only" />
+        </div>
+        <div class="form-field-group">
+          <label class="form-field-label" for="register-email">EMAIL ADDRESS [PRIVATE // ENCRYPTED]</label>
+          <input type="email" class="auth-text-input" id="register-email" required autocomplete="email" placeholder="Observer email (Never exposed publicly)" />
+        </div>
+        <div class="form-field-group">
+          <label class="form-field-label" for="register-password">SECURITY CREDENTIAL [PASSWORD]</label>
+          <input type="password" class="auth-text-input" id="register-password" required minlength="6" autocomplete="new-password" placeholder="Min 6 characters" />
+        </div>
+        <div class="form-field-group">
+          <label class="form-field-label" for="register-role">OBSERVER ROLE</label>
+          <select class="auth-text-input" id="register-role">
+            <option value="observer">Observer (Default Space Explorer)</option>
+            <option value="curator">Curator / Moderator</option>
+            <option value="admin">Platform Administrator</option>
+          </select>
+        </div>
+        <div class="privacy-security-notice" style="margin-bottom:14px; font-family:var(--font-mono); font-size:10px; color:var(--text-muted); line-height:1.5; border-left:2px solid var(--accent-cyan); padding-left:10px">
+          // PRIVACY GUARANTEE: Nickname is public. Real name and email are strictly private, encrypted, and never returned by public APIs or shown to other users.
+        </div>
+        <button type="submit" class="btn-spacecraft-primary auth-submit-btn">
+          <span>REGISTER OBSERVER</span>
+          <span class="btn-telemetry-tag">CREATE ID →</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Mission Dossier Modal -->
+  <div class="nova-modal-backdrop" id="mission-modal" role="dialog" aria-modal="true">
+    <div class="nova-modal-window">
+      <button class="modal-close-btn" id="mission-modal-close" aria-label="Close modal">×</button>
+      <div class="section-label" id="modal-mission-status">COMPLETED</div>
+      <h2 class="section-title" style="font-size:36px; margin-bottom:16px" id="modal-mission-title">APOLLO 11</h2>
+      
+      <div class="telemetry-specs-grid" style="margin-bottom:24px">
+        <div class="spec-item">
+          <span class="spec-label">DESTINATION</span>
+          <span class="spec-val" id="modal-mission-dest">The Moon</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-label">LAUNCH DATE</span>
+          <span class="spec-val" id="modal-mission-date">July 16, 1969</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-label">LAUNCH VEHICLE</span>
+          <span class="spec-val" id="modal-mission-vehicle">Saturn V</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-label">MISSION DURATION</span>
+          <span class="spec-val" id="modal-mission-duration">8 days, 3 hours</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-label">DISTANCE TRAVELED</span>
+          <span class="spec-val" id="modal-mission-dist">1,533,706 km</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-label">ASTRONAUT CORPS</span>
+          <span class="spec-val" id="modal-mission-crew">Neil Armstrong, Buzz Aldrin, Michael Collins</span>
+        </div>
+      </div>
+
+      <div class="section-label">PRIMARY FLIGHT GOAL</div>
+      <p class="scale-desc-text" id="modal-mission-goal" style="margin-bottom:20px"></p>
+
+      <div class="section-label">SCIENTIFIC & EXPLORATORY LEGACY</div>
+      <p class="scale-desc-text" id="modal-mission-results"></p>
+    </div>
+  </div>
+
+  <!-- Global Search Omnibox Modal -->
+  <div class="nova-modal-backdrop" id="search-modal" role="dialog" aria-modal="true">
+    <div class="nova-modal-window">
+      <button class="modal-close-btn" id="search-modal-close" aria-label="Close modal">×</button>
+      <div class="section-label">OMNIBOX SEARCH</div>
+      <div class="search-input-wrapper">
+        <input type="text" class="search-omnibox-input" id="search-input" placeholder="SEARCH THE COSMOS (e.g. Earth, JWST, Sirius, Black Hole...)" autocomplete="off" />
+      </div>
+      <div class="search-results-list" id="search-results-list"></div>
+    </div>
+  </div>
+
+  <!-- Mobile Full-Screen Menu Overlay -->
+  <div class="mobile-nav-overlay" id="mobile-nav-overlay">
+    <button class="modal-close-btn" id="mobile-menu-close-btn" aria-label="Close menu">×</button>
+    <div class="mobile-nav-content">
+      <div class="mobile-nav-group">
+        <div class="mobile-group-title">COSMOS</div>
+        <a href="#universe-scale-section" class="mobile-nav-link">// 01 THE UNIVERSE</a>
+        <a href="#galaxy-explorer-section" class="mobile-nav-link">// 04 GALAXIES</a>
+        <a href="#nebula-section" class="mobile-nav-link">// 05 NEBULAE</a>
+        <a href="#blackhole-section" class="mobile-nav-link">// 06 SINGULARITY</a>
+      </div>
+      <div class="mobile-nav-group">
+        <div class="mobile-group-title">PLANETARY</div>
+        <a href="#solarsystem-section" class="mobile-nav-link">// 03 SOLAR SYSTEM</a>
+        <a href="#planet-explorer-section" class="mobile-nav-link">// 02 WORLDS</a>
+      </div>
+      <div class="mobile-nav-group">
+        <div class="mobile-group-title">OPERATIONS</div>
+        <a href="#missions-section" class="mobile-nav-link">// 07 MISSIONS</a>
+        <a href="#observatory-section" class="mobile-nav-link">// 08 OBSERVATORY</a>
+        <a href="#timeline-section" class="mobile-nav-link">// 10 TIMELINE</a>
+      </div>
+      <div class="mobile-nav-group">
+        <div class="mobile-group-title">ARCHIVES</div>
+        <a href="#gallery-section" class="mobile-nav-link">// 09 SKY GALLERY</a>
+        <a href="/social" class="mobile-nav-link">// 10 NOVA SOCIAL</a>
+        <a href="/agencies" class="mobile-nav-link">// 11 SPACE AGENCIES</a>
+        <a href="#resources-section" class="mobile-nav-link">// 12 ARCHIVES</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3D Scripts & Master Application Logic -->
+  <script src="js/vendor/three.min.js"></script>
+  <script src="js/vendor/OrbitControls.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/avatar.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+[Unit]
+Description=NOVA Deep Space Observatory & Social Platform Daemon
+After=network.target nginx.service
+Wants=nginx.service
+
+[Service]
+Type=simple
+User=nova
+Group=nova
+WorkingDirectory=/opt/nova
+RuntimeDirectory=nova
+
+# Environment configuration securely loaded from chmod 600 file
+EnvironmentFile=/etc/nova/nova.env
+Environment="PATH=/opt/nova/venv/bin:/usr/local/bin:/usr/bin"
+
+# WSGI Application Server execution
+ExecStart=/opt/nova/venv/bin/gunicorn \
+    --config gunicorn.conf.py \
+    server:app
+
+# Process lifecycle & automated restart policy
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=30
+Restart=always
+RestartSec=5s
+
+# Systemd Security Hardening & Sandboxing
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+NoNewPrivileges=true
+CapabilityBoundingSet=
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,247 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  NOVA Deep Space Observatory & Social Platform — Complete AWS Infrastructure Stack
+  Deploys EC2 (t3.micro with IMDSv2), Elastic IP, Security Group, S3 Private Bucket,
+  IAM Role with least-privilege policies, SNS Alerting Topic, and CloudWatch Alarms.
+
+Parameters:
+  AdminIPRange:
+    Type: String
+    Default: '0.0.0.0/0'
+    Description: 'CIDR block permitted for SSH access on port 22 (RECOMMENDED: Set to your specific IP/32).'
+  
+  AlertEmail:
+    Type: String
+    Default: 'alerts@example.com'
+    Description: 'Email address for system alarms and telemetry alerts.'
+
+  InstanceType:
+    Type: String
+    Default: 't3.micro'
+    Description: 'EC2 Instance Type (Free Tier eligible: t3.micro).'
+
+Resources:
+  # ----------------------------------------------------------------------------
+  # 1. Private S3 Storage Bucket
+  # ----------------------------------------------------------------------------
+  NovaMediaBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireOldVersionsAndStaleMultiparts
+            Status: Enabled
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 30
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 7
+
+  NovaBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref NovaMediaBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: EnforceTLSRequestsOnly
+            Effect: Deny
+            Principal: '*'
+            Action: 's3:*'
+            Resource:
+              - !Sub 'arn:aws:s3:::${NovaMediaBucket}'
+              - !Sub 'arn:aws:s3:::${NovaMediaBucket}/*'
+            Condition:
+              Bool:
+                'aws:SecureTransport': 'false'
+
+  # ----------------------------------------------------------------------------
+  # 2. IAM Role & Instance Profile for EC2
+  # ----------------------------------------------------------------------------
+  NovaEC2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 'NovaServerRole-${AWS::StackName}'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: NovaStorageAndLoggingPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: ScopedS3StorageOperations
+                Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                  - s3:DeleteObject
+                Resource:
+                  - !Sub 'arn:aws:s3:::${NovaMediaBucket}/uploads/*'
+                  - !Sub 'arn:aws:s3:::${NovaMediaBucket}/avatars/*'
+                  - !Sub 'arn:aws:s3:::${NovaMediaBucket}/banners/*'
+                  - !Sub 'arn:aws:s3:::${NovaMediaBucket}/agencies/*'
+                  - !Sub 'arn:aws:s3:::${NovaMediaBucket}/outreach/*'
+                  - !Sub 'arn:aws:s3:::${NovaMediaBucket}/backups/*'
+              - Sid: ScopedS3BucketListing
+                Effect: Allow
+                Action:
+                  - s3:ListBucket
+                Resource: !Sub 'arn:aws:s3:::${NovaMediaBucket}'
+              - Sid: CloudWatchLogsAndMetrics
+                Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - logs:DescribeLogStreams
+                  - cloudwatch:PutMetricData
+                Resource: '*'
+
+  NovaInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref NovaEC2Role
+
+  # ----------------------------------------------------------------------------
+  # 3. Security Group
+  # ----------------------------------------------------------------------------
+  NovaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: 'NOVA Observatory Security Group (HTTP, HTTPS, Restricted SSH)'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+          Description: 'HTTP Let Encrypt Verification and HTTPS Redirect'
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+          Description: 'HTTPS Production Web Traffic'
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref AdminIPRange
+          Description: 'Restricted SSH Administration'
+
+  # ----------------------------------------------------------------------------
+  # 4. Amazon SNS Alerting Topic
+  # ----------------------------------------------------------------------------
+  NovaAlertsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub 'nova-observatory-alerts-${AWS::StackName}'
+      Subscription:
+        - Endpoint: !Ref AlertEmail
+          Protocol: email
+
+  # ----------------------------------------------------------------------------
+  # 5. CloudWatch System Alarms
+  # ----------------------------------------------------------------------------
+  HighCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub 'NOVA-HighCPU-${AWS::StackName}'
+      AlarmDescription: 'Triggers when instance CPU exceeds 70% for 2 minutes'
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: 60
+      EvaluationPeriods: 2
+      Threshold: 70
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref NovaInstance
+      AlarmActions:
+        - !Ref NovaAlertsTopic
+
+  StatusCheckFailedAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub 'NOVA-StatusCheckFailed-${AWS::StackName}'
+      AlarmDescription: 'Triggers when EC2 underlying status check fails'
+      MetricName: StatusCheckFailed
+      Namespace: AWS/EC2
+      Statistic: Maximum
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref NovaInstance
+      AlarmActions:
+        - !Ref NovaAlertsTopic
+
+  # ----------------------------------------------------------------------------
+  # 6. EC2 Instance with IMDSv2 Enforced
+  # ----------------------------------------------------------------------------
+  NovaLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: !Sub 'nova-lt-${AWS::StackName}'
+      LaunchTemplateData:
+        MetadataOptions:
+          HttpTokens: required
+          HttpEndpoint: enabled
+
+  NovaInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceType
+      IamInstanceProfile: !Ref NovaInstanceProfile
+      SecurityGroupIds:
+        - !Ref NovaSecurityGroup
+      # Ubuntu 24.04 LTS AMI (Canonical, us-east-1)
+      ImageId: 'ami-04b70fa74e45c3917'
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 20
+            VolumeType: gp3
+            DeleteOnTermination: true
+            Encrypted: true
+      LaunchTemplate:
+        LaunchTemplateId: !Ref NovaLaunchTemplate
+        Version: !GetAtt NovaLaunchTemplate.LatestVersionNumber
+      Tags:
+        - Key: Name
+          Value: !Sub 'nova-server-${AWS::StackName}'
+
+  NovaElasticIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      InstanceId: !Ref NovaInstance
+
+Outputs:
+  InstancePublicIP:
+    Description: 'Static Elastic IP Address of the EC2 Instance'
+    Value: !Ref NovaElasticIP
+
+  S3BucketName:
+    Description: 'Dedicated Private S3 Bucket for Media Assets'
+    Value: !Ref NovaMediaBucket
+
+  SNSTopicArn:
+    Description: 'SNS Topic ARN for System Alarms'
+    Value: !Ref NovaAlertsTopic

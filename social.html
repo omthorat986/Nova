@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NOVA // Social Transmissions & Dispatches</title>
+  <meta name="description" content="Space agency dispatches, astrophysical observations, and real-time mission telemetry." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%2302040A' stroke='%235CC8FF' stroke-width='4'/><circle cx='50' cy='50' r='12' fill='%235CC8FF'/></svg>" />
+  <link rel="stylesheet" href="/css/social.css" />
+  <link rel="stylesheet" href="/css/postcard.css" />
+  <link rel="stylesheet" href="/css/avatar.css" />
+  <link rel="stylesheet" href="/css/ui.css" />
+  <meta name="csrf-token" content="" />
+  <style>
+    /* Feed specific styles */
+    .feed-tabs-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      border-bottom: var(--border-hairline);
+      padding-bottom: 12px;
+    }
+    .feed-tab-btn {
+      background: transparent;
+      border: var(--border-hairline);
+      border-radius: var(--radius-tech);
+      color: var(--text-muted);
+      padding: 7px 16px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .feed-tab-btn.active {
+      background: rgba(92, 200, 255, 0.12);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+      font-weight: 600;
+    }
+    .category-filter-row {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 20px;
+    }
+    .cat-chip {
+      background: rgba(255, 255, 255, 0.04);
+      border: var(--border-hairline);
+      color: var(--text-mono);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 4px 10px;
+      border-radius: var(--radius-tech);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .cat-chip.active {
+      background: var(--accent-cyan);
+      color: #02040a;
+      font-weight: 600;
+    }
+    .widget-item {
+      padding: 12px;
+      border-bottom: var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .widget-item:last-child {
+      border-bottom: none;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="starfield-canvas"></canvas>
+
+  <div class="page-wrapper">
+    <div id="shared-navbar-container"></div>
+
+    <main class="main-container">
+      <!-- SLIM TELEMETRY HEADER (~48px) -->
+      <div class="slim-telemetry-header">
+        <div class="header-left-meta">
+          <span class="mono-label">// TELEMETRY CHANNEL 10.6</span>
+          <span class="header-pipe">|</span>
+          <h1 class="slim-page-title">NOVA SOCIAL FEED</h1>
+        </div>
+        <div class="header-live-counters" id="header-live-counters">
+          <div class="telemetry-counter-pill" title="Observation Dispatches Transmitted Today">
+            <span class="pulse-counter-dot"></span>
+            <span class="counter-label">POSTS TODAY:</span>
+            <span class="counter-value" id="hdr-posts-today">--</span>
+          </div>
+          <div class="telemetry-counter-pill" title="Active Planetary Observers Online">
+            <span class="counter-label">OBSERVERS ONLINE:</span>
+            <span class="counter-value" id="hdr-active-observers">--</span>
+          </div>
+          <div class="telemetry-counter-pill" title="Next Scheduled Orbital Launch Window">
+            <span class="counter-label">NEXT LAUNCH:</span>
+            <span class="counter-value countdown-glow" id="hdr-next-launch">T- CALC...</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="three-column-layout">
+        <!-- LEFT SIDEBAR: NAVIGATION & AGENCY CHANNELS -->
+        <aside class="social-left-rail">
+          <div class="sidebar-nav-box">
+            <div class="sidebar-nav-heading">
+              <span class="rail-icon-only">◈</span>
+              <span>// NAVIGATION</span>
+            </div>
+            <ul class="sidebar-nav-list">
+              <li class="sidebar-nav-item"><a href="/social" class="active" data-tooltip="Home Feed"><span class="mono-label">[01]</span> <span class="sidebar-nav-text">HOME FEED</span></a></li>
+              <li class="sidebar-nav-item"><a href="/popular" data-tooltip="Popular Dispatches"><span class="mono-label">[02]</span> <span class="sidebar-nav-text">POPULAR</span></a></li>
+              <li class="sidebar-nav-item"><a href="/agencies" data-tooltip="Space Agencies"><span class="mono-label">[03]</span> <span class="sidebar-nav-text">AGENCIES</span></a></li>
+              <li class="sidebar-nav-item"><a href="/social?cat=Launches" data-tooltip="Launch Manifest"><span class="mono-label">[04]</span> <span class="sidebar-nav-text">LAUNCHES</span></a></li>
+              <li class="sidebar-nav-item"><a href="#saved" id="nav-saved-shortcut" data-tooltip="Saved Dispatches"><span class="mono-label">[05]</span> <span class="sidebar-nav-text">SAVED</span></a></li>
+            </ul>
+
+            <div class="sidebar-nav-heading" style="margin-top: 18px;">
+              <span class="rail-icon-only">🛰</span>
+              <span>// AGENCIES</span>
+              <a href="/agencies" class="mono-label sidebar-expanded-text" style="text-decoration: none; font-size: 9px;">BROWSE ALL</a>
+            </div>
+            <div id="sidebar-followed-agencies">
+              <div class="skeleton-box" style="height: 30px; margin-bottom: 6px;"></div>
+              <div class="skeleton-box" style="height: 30px;"></div>
+            </div>
+
+            <div class="sidebar-nav-heading" style="margin-top: 20px;">
+              <span class="rail-icon-only">#</span>
+              <span>// TRENDING TOPICS</span>
+            </div>
+            <ul class="sidebar-nav-list" id="sidebar-trending-topics">
+              <li class="sidebar-nav-item"><a href="/social?cat=Astronomy" data-tooltip="James Webb Space Telescope"><span class="mono-sublabel">#</span> <span class="sidebar-nav-text">JamesWebb</span></a></li>
+              <li class="sidebar-nav-item"><a href="/social?cat=Missions" data-tooltip="Artemis Lunar Program"><span class="mono-sublabel">#</span> <span class="sidebar-nav-text">Artemis</span></a></li>
+              <li class="sidebar-nav-item"><a href="/social?cat=Planets" data-tooltip="Exoplanet Atmospheres"><span class="mono-sublabel">#</span> <span class="sidebar-nav-text">Exoplanets</span></a></li>
+              <li class="sidebar-nav-item"><a href="/social?cat=Astrophysics" data-tooltip="Gravitational Waves"><span class="mono-sublabel">#</span> <span class="sidebar-nav-text">GravitationalWaves</span></a></li>
+              <li class="sidebar-nav-item"><a href="/social?cat=Research" data-tooltip="Mars Sample Return"><span class="mono-sublabel">#</span> <span class="sidebar-nav-text">MarsSampleReturn</span></a></li>
+            </ul>
+
+            <div class="sidebar-nav-heading" style="margin-top: 20px;">
+              <span class="rail-icon-only">⏱</span>
+              <span>// RECENT FREQUENCIES</span>
+            </div>
+            <ul class="sidebar-nav-list">
+              <li class="sidebar-nav-item"><a href="/social?sort=new" data-tooltip="Recent Dispatches"><span class="mono-sublabel">[REC]</span> <span class="sidebar-nav-text">Recent Dispatches</span></a></li>
+              <li class="sidebar-nav-item"><a href="/agency/nasa" data-tooltip="NASA Channel"><span class="mono-sublabel">[NASA]</span> <span class="sidebar-nav-text">NASA Channel</span></a></li>
+              <li class="sidebar-nav-item"><a href="/agency/general" data-tooltip="General Space"><span class="mono-sublabel">[GEN]</span> <span class="sidebar-nav-text">General Space</span></a></li>
+            </ul>
+          </div>
+        </aside>
+
+        <!-- CENTER COLUMN: FEED -->
+        <section class="social-center-feed">
+          <!-- ACTIVE CHANNEL FILTER BANNER (IF FILTERED BY AGENCY) -->
+          <div id="active-agency-banner" style="display: none; margin-bottom: 16px;"></div>
+
+          <!-- UNIFIED STICKY FILTER BAR -->
+          <div class="unified-sticky-filter-bar">
+            <!-- Row 1: Global/Following Tabs + Sort Controls + Layout Toggle -->
+            <div class="filter-controls-row">
+              <div class="feed-tabs-group" role="tablist">
+                <button class="feed-tab-btn active" id="tab-feed-global" data-tab="global" role="tab" aria-selected="true">[ GLOBAL FEED ]</button>
+                <button class="feed-tab-btn" id="tab-feed-following" data-tab="following" role="tab" aria-selected="false">[ FOLLOWING ]</button>
+              </div>
+
+              <div class="filter-actions-group">
+                <div class="sort-controls-group" id="sort-controls" role="group" aria-label="Sort Dispatches">
+                  <span class="mono-sublabel" style="font-size: 9px; margin-right: 2px;">SORT:</span>
+                  <button class="sort-chip-btn active" data-sort="new">NEW</button>
+                  <button class="sort-chip-btn" data-sort="hot">HOT</button>
+                  <button class="sort-chip-btn" data-sort="top">TOP</button>
+                </div>
+
+                <div class="layout-toggle-group" id="layout-toggle" role="group" aria-label="Stream Layout">
+                  <span class="mono-sublabel" style="font-size: 9px; margin-right: 2px;">VIEW:</span>
+                  <button class="layout-toggle-btn active" id="btn-layout-list" data-layout="list" title="Single Column List View">[LIST]</button>
+                  <button class="layout-toggle-btn" id="btn-layout-grid" data-layout="grid" title="Multi-column Grid View">[GRID]</button>
+                  <button class="layout-toggle-btn" id="btn-layout-compact" data-layout="compact" title="Compact Telemetry View">[COMPACT]</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Row 2: Horizontally scrollable single row of topic chips -->
+            <div class="topic-chips-scroll-row" id="category-pills" role="toolbar" aria-label="Topic Frequencies">
+              <span class="mono-sublabel" style="font-size: 9px; margin-right: 4px; flex-shrink: 0;">TOPICS:</span>
+              <button class="cat-chip active" data-cat="All">ALL</button>
+              <button class="cat-chip" data-cat="Planets">PLANETS</button>
+              <button class="cat-chip" data-cat="Missions">MISSIONS</button>
+              <button class="cat-chip" data-cat="Astronomy">ASTRONOMY</button>
+              <button class="cat-chip" data-cat="Astrophysics">ASTROPHYSICS</button>
+              <button class="cat-chip" data-cat="Launches">LAUNCHES</button>
+              <button class="cat-chip" data-cat="Research">RESEARCH</button>
+              <button class="cat-chip" data-cat="Other">OTHER</button>
+            </div>
+          </div>
+
+          <!-- STICKY NEW DISPATCHES PILL -->
+          <div id="new-dispatches-pill-container" class="new-dispatches-pill-container" style="display: none;">
+            <button type="button" id="btn-new-dispatches" class="btn-new-dispatches" aria-label="Load new dispatches">
+              <span class="pill-radar-dot"></span>
+              <span id="new-dispatches-label">[ 1 NEW DISPATCH ]</span>
+              <span class="pill-arrow-icon">↑</span>
+            </button>
+          </div>
+
+          <!-- POST STREAM -->
+          <div id="posts-container" class="posts-stream-list">
+            <div class="hairline-card" style="padding: 30px;">
+              <div class="skeleton-box" style="height: 18px; width: 40%; margin-bottom: 12px;"></div>
+              <div class="skeleton-box" style="height: 14px; width: 90%; margin-bottom: 8px;"></div>
+              <div class="skeleton-box" style="height: 14px; width: 70%;"></div>
+            </div>
+          </div>
+
+          <!-- FULL POST DETAIL VIEW (/post/<id>) -->
+          <div id="post-detail-view" class="full-post-view detail-hidden" hidden style="display: none !important;"></div>
+        </section>
+
+        <!-- RIGHT RAIL: TOP AGENCIES, LAUNCHES, NEWS, RECENT, OBSERVERS -->
+        <aside class="social-right-rail">
+          <!-- POST DETAIL AGENCY DOSSIER WIDGET -->
+          <div id="post-detail-agency-widget" style="display: none; margin-bottom: 20px;"></div>
+
+          <!-- TOP AGENCIES -->
+          <div class="hairline-card" style="margin-bottom: 20px;">
+            <div class="card-header-bar">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class="mono-label">// TOP AGENCIES</span>
+                <span class="widget-count-badge">[8]</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <a href="/agencies" class="mono-sublabel" style="text-decoration:none;">[ALL →]</a>
+                <button class="widget-collapse-btn" data-toggle-target="top-agencies-widget-content" aria-label="Toggle Agencies">[ − ]</button>
+              </div>
+            </div>
+            <div id="top-agencies-widget-content" class="collapsible-widget-body" style="max-height: 240px; overflow-y: auto;">
+              <div class="skeleton-box" style="height: 44px; margin-bottom: 6px;"></div>
+              <div class="skeleton-box" style="height: 44px; margin-bottom: 6px;"></div>
+              <div class="skeleton-box" style="height: 44px;"></div>
+            </div>
+          </div>
+
+          <!-- UPCOMING LAUNCHES -->
+          <div class="hairline-card" style="margin-bottom: 20px;">
+            <div class="card-header-bar">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class="mono-label">// UPCOMING LAUNCHES</span>
+                <span class="widget-count-badge">LIVE</span>
+              </div>
+              <button class="widget-collapse-btn" data-toggle-target="launches-widget-content" aria-label="Toggle Launches">[ − ]</button>
+            </div>
+            <div id="launches-widget-content" class="collapsible-widget-body">
+              <div class="skeleton-box" style="height: 50px; margin-bottom: 8px;"></div>
+              <div class="skeleton-box" style="height: 50px;"></div>
+            </div>
+          </div>
+
+          <!-- AGENCY NEWS -->
+          <div class="hairline-card" style="margin-bottom: 20px;">
+            <div class="card-header-bar">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class="mono-label">// AGENCY NEWS</span>
+                <span class="widget-count-badge">OFFICIAL</span>
+              </div>
+              <button class="widget-collapse-btn" data-toggle-target="agency-news-widget-content" aria-label="Toggle News">[ − ]</button>
+            </div>
+            <div id="agency-news-widget-content" class="collapsible-widget-body">
+              <div class="skeleton-box" style="height: 45px; margin-bottom: 8px;"></div>
+              <div class="skeleton-box" style="height: 45px;"></div>
+            </div>
+          </div>
+
+          <!-- RECENT POSTS -->
+          <div class="hairline-card" style="margin-bottom: 20px;">
+            <div class="card-header-bar">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class="mono-label">// RECENT POSTS</span>
+                <span class="widget-count-badge">TELEMETRY</span>
+              </div>
+              <button class="widget-collapse-btn" data-toggle-target="recent-posts-widget-content" aria-label="Toggle Recent Posts">[ − ]</button>
+            </div>
+            <div id="recent-posts-widget-content" class="collapsible-widget-body">
+              <div class="skeleton-box" style="height: 35px; margin-bottom: 6px;"></div>
+              <div class="skeleton-box" style="height: 35px;"></div>
+            </div>
+          </div>
+
+          <!-- ACTIVE OBSERVERS -->
+          <div class="hairline-card" style="margin-bottom: 20px;">
+            <div class="card-header-bar">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class="mono-label">// ACTIVE OBSERVERS</span>
+                <span class="widget-count-badge">ONLINE</span>
+              </div>
+              <button class="widget-collapse-btn" data-toggle-target="active-observers-widget-content" aria-label="Toggle Observers">[ − ]</button>
+            </div>
+            <div id="active-observers-widget-content" class="collapsible-widget-body">
+              <div class="skeleton-box" style="height: 38px; margin-bottom: 6px;"></div>
+              <div class="skeleton-box" style="height: 38px;"></div>
+            </div>
+          </div>
+
+          <!-- OBSERVATORY FOOTER LINKS -->
+          <div class="hairline-card" style="padding: 14px 16px; margin-bottom: 20px;">
+            <div style="font-family: var(--font-mono); font-size: 10px; color: var(--text-mono); line-height: 1.8;">
+              <div>NOVA OBSERVATORY SOCIAL NETWORK</div>
+              <div style="display: flex; gap: 10px; margin-top: 6px; flex-wrap: wrap;">
+                <a href="/terms" style="color: var(--text-muted); text-decoration: none;">TERMS</a>
+                <span style="color: rgba(255,255,255,0.2);">•</span>
+                <a href="/privacy" style="color: var(--text-muted); text-decoration: none;">PRIVACY</a>
+                <span style="color: rgba(255,255,255,0.2);">•</span>
+                <a href="/contact" style="color: var(--text-muted); text-decoration: none;">CONTACT</a>
+                <span style="color: rgba(255,255,255,0.2);">•</span>
+                <a href="/agencies" style="color: var(--text-muted); text-decoration: none;">CHANNELS</a>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <div id="shared-footer-container"></div>
+  </div>
+
+  <!-- REPORT MODAL -->
+  <div class="modal-backdrop" id="report-modal">
+    <div class="modal-window">
+      <button class="modal-close-btn" id="report-modal-close">×</button>
+      <span class="mono-label" style="color: var(--accent-alert);">// POLICY ENFORCEMENT</span>
+      <h2 style="font-family: var(--font-mono); font-size: 16px; margin: 8px 0 16px; color:#fff;">SUBMIT CONTENT REPORT</h2>
+      <form id="report-form">
+        <input type="hidden" id="report-post-id" />
+        <div class="form-group">
+          <label class="form-label" for="report-reason">VIOLATION REASON</label>
+          <textarea class="form-textarea" id="report-reason" rows="3" placeholder="Specify violations (harassment, spam, misinformation, unauthorized PII)..." required></textarea>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="submit" class="btn-tech btn-tech-danger">[SUBMIT REPORT]</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- THEMED IMAGE LIGHTBOX MODAL -->
+  <div class="nova-lightbox-backdrop" id="nova-lightbox" role="dialog" aria-modal="true" aria-label="Dispatch Image Viewer" style="display: none;">
+    <div class="nova-lightbox-content">
+      <div class="nova-lightbox-bar">
+        <div class="nova-lightbox-title" id="lightbox-title">// ASTROPHOTOGRAPHY DISPATCH</div>
+        <button type="button" class="nova-lightbox-close" id="lightbox-close" aria-label="Close image viewer">[ ✕ ESC ]</button>
+      </div>
+      <div class="nova-lightbox-image-wrap">
+        <img src="" id="lightbox-img" alt="Telemetry Attachment" />
+      </div>
+      <div class="nova-lightbox-caption" id="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script src="/js/ui.js"></script>
+  <script src="/js/api.js"></script>
+  <script type="module" src="/js/avatar.js"></script>
+  <script type="module" src="/js/page-social.js"></script>
+</body>
+</html>
