@@ -97,7 +97,7 @@ SES_RECIPIENT_CONFIG = os.environ.get('SES_RECIPIENT_CONFIG', '')
 NASA_API_KEY = os.environ.get('NASA_API_KEY', 'DEMO_KEY')
 
 # Guard against test runs or CLI commands when checking production requirements
-IS_CLI_OR_TEST = any(arg in sys.argv for arg in ('--test', '--migrate', '--seed', '--create-curator')) or os.environ.get('TESTING', 'false').lower() == 'true'
+IS_CLI_OR_TEST = any(arg in sys.argv for arg in ('--test', '--migrate', '--seed', '--create-curator', 'test', 'migrate', 'seed', 'create-curator', 'create_curator', 'createsuperuser')) or os.environ.get('TESTING', 'false').lower() == 'true'
 
 if APP_ENV == 'production' and not IS_CLI_OR_TEST:
     weak_placeholders = (
@@ -864,57 +864,114 @@ def seed_agencies(conn=None):
         conn.close()
 
 
-def create_curator_cli():
-    """CLI prompt to create or elevate the initial curator/admin account."""
+def create_curator_cli(nickname=None, email=None, password=None, is_interactive=None):
+    """
+    CLI prompt or non-interactive routine to create or elevate the initial curator/admin account.
+    Supports environment variables (NOVA_CURATOR_NICKNAME, NOVA_CURATOR_EMAIL, NOVA_CURATOR_PASSWORD)
+    and CLI flags (--nickname, --email, --password) for headless / CI automation.
+    """
+    import getpass
     print("\n" + "=" * 65)
     print("👨‍🚀 NOVA Observatory — Create Initial Curator Account")
     print("=" * 65)
-    import getpass
 
-    nickname = input("Curator Nickname [default: curator]: ").strip() or "curator"
+    def get_cli_flag(name):
+        for i, arg in enumerate(sys.argv):
+            if arg.startswith(f"--{name}="):
+                return arg.split("=", 1)[1]
+            if arg == f"--{name}" and i + 1 < len(sys.argv):
+                return sys.argv[i + 1]
+        return None
+
+    # Resolve inputs: parameter -> CLI flag -> env var
+    nickname = nickname or get_cli_flag('nickname') or os.environ.get('NOVA_CURATOR_NICKNAME')
+    email = email or get_cli_flag('email') or os.environ.get('NOVA_CURATOR_EMAIL')
+    password = password or get_cli_flag('password') or os.environ.get('NOVA_CURATOR_PASSWORD')
+
+    # Determine interactivity if not explicitly passed
+    if is_interactive is None:
+        has_headless_inputs = bool(nickname and email and password)
+        is_interactive = sys.stdin.isatty() and not has_headless_inputs
+
+    if not nickname:
+        if is_interactive:
+            nickname = input("Curator Nickname [default: curator]: ").strip() or "curator"
+        else:
+            nickname = "curator"
+
     if not NICKNAME_REGEX.match(nickname):
         print(f"❌ Invalid nickname '{nickname}'. Must be 3-20 alphanumeric characters or underscores.")
-        sys.exit(1)
+        if not is_interactive and not any(arg in sys.argv for arg in ('--test', 'test')):
+            sys.exit(1)
+        raise ValueError(f"Invalid nickname: {nickname}")
 
-    email = input(f"Curator Email [default: {nickname}@nova.space]: ").strip() or f"{nickname}@nova.space"
-    if not ('@' in email and '.' in email):
+    if not email:
+        if is_interactive:
+            email = input(f"Curator Email [default: {nickname}@nova.space]: ").strip() or f"{nickname}@nova.space"
+        else:
+            email = f"{nickname}@nova.space"
+
+    if not ('@' in email and '.' in email and len(email) <= 120):
         print(f"❌ Invalid email format '{email}'.")
-        sys.exit(1)
+        if not is_interactive and not any(arg in sys.argv for arg in ('--test', 'test')):
+            sys.exit(1)
+        raise ValueError(f"Invalid email: {email}")
 
-    password = getpass.getpass("Curator Password (minimum 10 characters): ")
-    if len(password) < 10:
-        print("❌ Password too short (minimum 10 characters required).")
-        sys.exit(1)
+    if not password:
+        if is_interactive:
+            password = getpass.getpass("Curator Password (minimum 10 characters): ")
+            confirm = getpass.getpass("Confirm Curator Password: ")
+            if password != confirm:
+                print("❌ Passwords do not match.")
+                sys.exit(1)
+        else:
+            print("❌ Password is required. Set NOVA_CURATOR_PASSWORD or pass --password.")
+            if not any(arg in sys.argv for arg in ('--test', 'test')):
+                sys.exit(1)
+            raise ValueError("Password is required")
 
-    confirm = getpass.getpass("Confirm Curator Password: ")
-    if password != confirm:
-        print("❌ Passwords do not match.")
-        sys.exit(1)
+    # Enforce password strength rules (10+ characters, common blocklist)
+    is_strong, pass_err = validate_password_strength(password)
+    if not is_strong:
+        print(f"❌ Weak password: {pass_err}")
+        if not is_interactive and not any(arg in sys.argv for arg in ('--test', 'test')):
+            sys.exit(1)
+        raise ValueError(f"Weak password: {pass_err}")
 
-    pw_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    # Hash with identical bcrypt cost factor 12 as registration
+    pw_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt(12)).decode('utf-8')
     color = generate_avatar_color(nickname)
     now_iso = datetime.now(timezone.utc).isoformat()
 
     with get_db() as conn:
         cursor = conn.cursor()
-        cursor.execute("SELECT id FROM users WHERE LOWER(nickname) = LOWER(?) OR LOWER(email) = LOWER(?)", (nickname, email))
+        cursor.execute("SELECT id, nickname, username, role, session_version FROM users WHERE LOWER(nickname) = LOWER(?) OR LOWER(email) = LOWER(?)", (nickname, email))
         existing = cursor.fetchone()
         if existing:
+            user_id = existing['id']
+            existing_nick = existing['nickname']
             cursor.execute("""
                 UPDATE users
-                SET password_hash = ?, role = 'curator', is_curator = 1, email_verified = 1, avatar_color = ?
+                SET password_hash = ?, role = 'curator', email_verified = 1,
+                    avatar_color = COALESCE(avatar_color, ?),
+                    session_version = session_version + 1
                 WHERE id = ?
-            """, (pw_hash, color, existing['id']))
+            """, (pw_hash, color, user_id))
             conn.commit()
-            print(f"✅ Existing user '{nickname}' successfully elevated to CURATOR status.")
+            log_audit('ROLE_ELEVATED', f"User @{existing_nick} elevated to curator via CLI", user_id=user_id, username=existing_nick)
+            print(f"✅ Existing user '{existing_nick}' successfully elevated to CURATOR status.")
         else:
             cursor.execute("""
-                INSERT INTO users (nickname, email, password_hash, role, is_curator, email_verified, avatar_color, created_at)
-                VALUES (?, ?, ?, 'curator', 1, 1, ?, ?)
-            """, (nickname, email, pw_hash, color, now_iso))
+                INSERT INTO users (full_name, nickname, username, email, password_hash, role, status, email_verified, session_version, avatar_color, created_at)
+                VALUES (?, ?, ?, ?, ?, 'curator', 'active', 1, 1, ?, ?)
+            """, (nickname, nickname, nickname, email, pw_hash, color, now_iso))
+            user_id = cursor.lastrowid
             conn.commit()
+            log_audit('CURATOR_CREATED', f"Curator @{nickname} created via CLI", user_id=user_id, username=nickname)
             print(f"✅ Curator '{nickname}' successfully created in database.")
     print("=" * 65 + "\n")
+    return {"id": user_id, "nickname": nickname, "email": email, "role": "curator"}
+
 
 
 def init_db():
@@ -5631,6 +5688,119 @@ def run_automated_tests(port):
             storage.bucket = original_storage_bucket
             storage.region = original_storage_region
 
+        # 47. CLI create-curator Non-Interactive Execution, Auth & Curator-Only Route RBAC
+        test_cur_nick = "cli_curator_test"
+        test_cur_email = "curator_cli@nova.space"
+        test_cur_pass = "CuratorSecurePass2026!"
+
+        # A: Non-interactive execution via environment variables
+        os.environ['NOVA_CURATOR_NICKNAME'] = test_cur_nick
+        os.environ['NOVA_CURATOR_EMAIL'] = test_cur_email
+        os.environ['NOVA_CURATOR_PASSWORD'] = test_cur_pass
+        try:
+            cli_res = create_curator_cli()
+        finally:
+            os.environ.pop('NOVA_CURATOR_NICKNAME', None)
+            os.environ.pop('NOVA_CURATOR_EMAIL', None)
+            os.environ.pop('NOVA_CURATOR_PASSWORD', None)
+
+        cli_created_ok = (cli_res is not None and cli_res.get('role') == 'curator')
+
+        # B: Authenticate as the newly created curator
+        cur_test_sess = requests.Session()
+        cur_csrf = get_session_csrf(cur_test_sess)
+        login_resp = cur_test_sess.post(f"{base_url}/api/login", json={
+            "identifier": test_cur_email,
+            "password": test_cur_pass
+        }, headers={"X-CSRF-Token": cur_csrf}, timeout=3)
+        cur_login_ok = (login_resp.status_code == 200 and login_resp.json().get('user', {}).get('role') == 'curator')
+
+        # C: Verify /api/me reports role as 'curator'
+        me_resp = cur_test_sess.get(f"{base_url}/api/me", timeout=3)
+        me_role_ok = (me_resp.status_code == 200 and me_resp.json().get('user', {}).get('role') == 'curator')
+
+        # D: Curator-only routes return 200 for curator
+        reports_curator_resp = cur_test_sess.get(f"{base_url}/api/reports", timeout=3)
+        reports_200_curator = (reports_curator_resp.status_code == 200)
+
+        moderation_curator_resp = cur_test_sess.get(f"{base_url}/moderation", timeout=3)
+        moderation_200_curator = (moderation_curator_resp.status_code == 200)
+
+        # E: Same curator-only routes return 403 for normal observer user
+        obs_test_sess = requests.Session()
+        obs_csrf = get_session_csrf(obs_test_sess)
+        obs_test_sess.post(f"{base_url}/api/register", json={
+            "name": "Normal Observer",
+            "nickname": "obs_cli_test",
+            "email": "obs_cli_test@nova.space",
+            "password": "NormalUserPass2026!"
+        }, headers={"X-CSRF-Token": obs_csrf}, timeout=3)
+
+        reports_obs_resp = obs_test_sess.get(f"{base_url}/api/reports", timeout=3)
+        reports_403_obs = (reports_obs_resp.status_code == 403)
+
+        moderation_obs_resp = obs_test_sess.get(f"{base_url}/moderation", timeout=3)
+        moderation_403_obs = (moderation_obs_resp.status_code == 403)
+
+        # F: Elevate existing observer to curator and verify access update
+        elev_nick = "obs_to_elevate"
+        elev_email = "elevate_me@nova.space"
+        elev_init_pass = "InitialPass2026!"
+        elev_new_pass = "ElevatedCurator2026!"
+
+        elev_sess = requests.Session()
+        elev_csrf = get_session_csrf(elev_sess)
+        elev_sess.post(f"{base_url}/api/register", json={
+            "name": "Candidate User",
+            "nickname": elev_nick,
+            "email": elev_email,
+            "password": elev_init_pass
+        }, headers={"X-CSRF-Token": elev_csrf}, timeout=3)
+
+        # Elevate using create_curator_cli parameters
+        create_curator_cli(nickname=elev_nick, email=elev_email, password=elev_new_pass)
+
+        elev_re_sess = requests.Session()
+        elev_re_csrf = get_session_csrf(elev_re_sess)
+        elev_login_resp = elev_re_sess.post(f"{base_url}/api/login", json={
+            "identifier": elev_email,
+            "password": elev_new_pass
+        }, headers={"X-CSRF-Token": elev_re_csrf}, timeout=3)
+        elev_login_ok = (elev_login_resp.status_code == 200 and elev_login_resp.json().get('user', {}).get('role') == 'curator')
+
+        elev_reports_resp = elev_re_sess.get(f"{base_url}/api/reports", timeout=3)
+        elev_reports_200 = (elev_reports_resp.status_code == 200)
+
+        # G: Audit log entries recorded in database
+        with get_db() as conn:
+            c_audit = conn.cursor()
+            c_audit.execute("SELECT action FROM audit_logs WHERE action IN ('CURATOR_CREATED', 'ROLE_ELEVATED')")
+            actions_found = [row[0] for row in c_audit.fetchall()]
+        audit_logged_ok = ('CURATOR_CREATED' in actions_found and 'ROLE_ELEVATED' in actions_found)
+
+        # H: Weak password rejection
+        weak_pass_rejected = False
+        try:
+            create_curator_cli(nickname="weak_cur", email="weak@nova.space", password="short")
+        except ValueError:
+            weak_pass_rejected = True
+
+        test_47_passed = (
+            cli_created_ok and
+            cur_login_ok and
+            me_role_ok and
+            reports_200_curator and
+            moderation_200_curator and
+            reports_403_obs and
+            moderation_403_obs and
+            elev_login_ok and
+            elev_reports_200 and
+            audit_logged_ok and
+            weak_pass_rejected
+        )
+        record_test("47. CLI create-curator Non-Interactive Execution, Auth & Curator-Only Route RBAC", test_47_passed)
+
+
     finally:
         server.shutdown()
         server.server_close()
@@ -5687,6 +5857,9 @@ def main():
     parser.add_argument('--migrate', action='store_true', help="Apply all pending schema migrations and exit")
     parser.add_argument('--seed', action='store_true', help="Seed official space agency channels and exit")
     parser.add_argument('--create-curator', action='store_true', help="Create or elevate the initial curator account and exit")
+    parser.add_argument('--nickname', type=str, default=None, help="Curator nickname (for non-interactive create-curator)")
+    parser.add_argument('--email', type=str, default=None, help="Curator email address (for non-interactive create-curator)")
+    parser.add_argument('--password', type=str, default=None, help="Curator password (for non-interactive create-curator)")
     args = parser.parse_args()
 
     if args.test:
@@ -5705,7 +5878,7 @@ def main():
         sys.exit(0)
 
     if args.create_curator:
-        create_curator_cli()
+        create_curator_cli(nickname=args.nickname, email=args.email, password=args.password)
         sys.exit(0)
 
     print("\n" + "=" * 75)

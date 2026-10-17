@@ -30,7 +30,7 @@ Commands:
   migrate          Apply all pending database migrations
   seed             Seed official space agencies and General Space channel
   create-curator   Create or elevate the initial curator/admin account
-  test             Execute the 46-case automated test suite
+  test             Execute the automated regression test suite
   runserver        Launch development server (default port 8080)
 """)
 

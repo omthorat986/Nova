@@ -54,6 +54,7 @@ This document details the automated integration and regression test matrix for t
 | **44** | S3 Presigned URLs | Generates valid presigned S3 URLs expiring in 300s with signature | Storage Engine | Valid S3 URL with signature | ✅ PASS |
 | **45** | S3 Account Deletion Purge | Deleting observer account purges all user S3 images from bucket | `DELETE /api/me` | HTTP 200 & zero remaining keys | ✅ PASS |
 | **46** | S3 Readiness Probe (503) | `/ready` probe returns 503 Service Unavailable when S3 bucket unreachable | `GET /ready` | HTTP 503 degraded / 200 ready | ✅ PASS |
+| **47** | CLI Curator Creation & RBAC | Non-interactive create-curator with bcrypt hash, password policies, audit log, and RBAC | CLI & API | HTTP 200 curator / HTTP 403 observer | ✅ PASS |
 
 ---
 
