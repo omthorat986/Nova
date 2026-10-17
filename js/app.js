@@ -325,6 +325,19 @@ class NovaSpaceApp {
         spaceAudio.playTelemetryClick();
       });
     }
+
+    if (overlay) {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+          overlay.classList.remove('active');
+        }
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && overlay.classList.contains('active')) {
+          overlay.classList.remove('active');
+        }
+      });
+    }
   }
 
   setupScrollProgressTracker() {

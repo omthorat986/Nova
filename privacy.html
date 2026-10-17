@@ -12,8 +12,8 @@
   <style>
     .legal-container {
       max-width: 800px;
-      margin: 40px auto 80px;
-      padding: 32px;
+      margin: clamp(20px, 4vw, 40px) auto 80px;
+      padding: clamp(16px, 4vw, 32px);
       background: var(--bg-card);
       border: var(--border-hairline);
       border-radius: var(--radius-tech);
@@ -73,60 +73,62 @@
           <p>
             NOVA operates on strict least-privilege principles. Below is our comprehensive disclosure of every data point collected:
           </p>
-          <table class="privacy-matrix">
-            <thead>
-              <tr>
-                <th>DATA FIELD</th>
-                <th>CLASSIFICATION</th>
-                <th>VISIBILITY LEVEL</th>
-                <th>PURPOSE</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Callsign / Nickname</td>
-                <td>PUBLIC</td>
-                <td>Visible to all visitors</td>
-                <td>Attribution on dispatches, profiles, and follower graphs</td>
-              </tr>
-              <tr>
-                <td>Full Legal Name</td>
-                <td>CONFIDENTIAL</td>
-                <td>Account Owner only</td>
-                <td>Identity record, never exposed via any public API</td>
-              </tr>
-              <tr>
-                <td>Email Address</td>
-                <td>CONFIDENTIAL</td>
-                <td>Account Owner only</td>
-                <td>Authentication, password resets, security notifications</td>
-              </tr>
-              <tr>
-                <td>Password Hash</td>
-                <td>ENCRYPTED</td>
-                <td>Server verification only</td>
-                <td>Salted Bcrypt hash (raw password is never stored or logged)</td>
-              </tr>
-              <tr>
-                <td>Uploaded Astrophotos</td>
-                <td>PUBLIC / S3</td>
-                <td>Visible upon curation</td>
-                <td>EXIF & GPS metadata automatically stripped before storage</td>
-              </tr>
-              <tr>
-                <td>Research Outreach</td>
-                <td>RESTRICTED</td>
-                <td>Sender & Agency</td>
-                <td>Scientific collaboration drafts dispatched to aerospace agencies</td>
-              </tr>
-              <tr>
-                <td>IP & Audit Telemetry</td>
-                <td>INTERNAL</td>
-                <td>Security audit logs only</td>
-                <td>Brute-force lockout and defense against anomalous requests</td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="table-responsive-container">
+            <table class="privacy-matrix">
+              <thead>
+                <tr>
+                  <th>DATA FIELD</th>
+                  <th>CLASSIFICATION</th>
+                  <th>VISIBILITY LEVEL</th>
+                  <th>PURPOSE</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Callsign / Nickname</td>
+                  <td>PUBLIC</td>
+                  <td>Visible to all visitors</td>
+                  <td>Attribution on dispatches, profiles, and follower graphs</td>
+                </tr>
+                <tr>
+                  <td>Full Legal Name</td>
+                  <td>CONFIDENTIAL</td>
+                  <td>Account Owner only</td>
+                  <td>Identity record, never exposed via any public API</td>
+                </tr>
+                <tr>
+                  <td>Email Address</td>
+                  <td>CONFIDENTIAL</td>
+                  <td>Account Owner only</td>
+                  <td>Authentication, password resets, security notifications</td>
+                </tr>
+                <tr>
+                  <td>Password Hash</td>
+                  <td>ENCRYPTED</td>
+                  <td>Server verification only</td>
+                  <td>Salted Bcrypt hash (raw password is never stored or logged)</td>
+                </tr>
+                <tr>
+                  <td>Uploaded Astrophotos</td>
+                  <td>PUBLIC / S3</td>
+                  <td>Visible upon curation</td>
+                  <td>EXIF & GPS metadata automatically stripped before storage</td>
+                </tr>
+                <tr>
+                  <td>Research Outreach</td>
+                  <td>RESTRICTED</td>
+                  <td>Sender & Agency</td>
+                  <td>Scientific collaboration drafts dispatched to aerospace agencies</td>
+                </tr>
+                <tr>
+                  <td>IP & Audit Telemetry</td>
+                  <td>INTERNAL</td>
+                  <td>Security audit logs only</td>
+                  <td>Brute-force lockout and defense against anomalous requests</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <div class="legal-section">

@@ -45,6 +45,7 @@ html {
   font-size: 16px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
 body {
@@ -110,10 +111,23 @@ body {
   }
 }
 
+@media (hover: none) and (pointer: coarse) {
+  .nova-cursor-dot,
+  .nova-cursor-ring,
+  .nova-cursor-ripple {
+    display: none !important;
+  }
+}
+
 /* Cinematic Genesis Loading Overlay */
 .cinematic-intro-overlay {
   position: fixed;
   inset: 0;
+  width: 100%;
+  max-width: 100vw;
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
   background-color: #000000;
   z-index: 99999;
   display: flex;
@@ -147,7 +161,7 @@ body {
 .intro-progress-container {
   position: absolute;
   bottom: 80px;
-  width: 280px;
+  width: min(280px, calc(100vw - 32px));
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -183,8 +197,8 @@ body {
 
 .intro-skip-btn {
   position: absolute;
-  top: 32px;
-  right: 36px;
+  top: clamp(16px, 3vw, 32px);
+  right: clamp(16px, 3vw, 36px);
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.15);
   color: var(--text-dim);
@@ -195,6 +209,7 @@ body {
   border-radius: var(--radius-tech);
   cursor: pointer;
   transition: color 0.2s, border-color 0.2s;
+  touch-action: manipulation;
 }
 
 .intro-skip-btn:hover {
@@ -208,11 +223,13 @@ body {
   top: 0;
   left: 0;
   width: 100%;
+  max-width: 100vw;
+  box-sizing: border-box;
   height: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 48px;
+  padding: 0 clamp(16px, 3.5vw, 48px);
   z-index: 1000;
   background: rgba(5, 7, 15, 0.85);
   backdrop-filter: blur(16px);
@@ -1134,14 +1151,17 @@ section {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-panel);
-  padding: 12px 24px;
+  padding: 12px clamp(12px, 3vw, 24px);
   margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .ctrl-group {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .ctrl-label {
@@ -1446,7 +1466,7 @@ section {
 
 .missions-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
   gap: 20px;
 }
 
@@ -1570,6 +1590,13 @@ section {
   display: flex;
   gap: 8px;
   margin-bottom: 20px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.wavelength-selector-bar::-webkit-scrollbar {
+  display: none;
 }
 
 .wavelength-btn {
@@ -1757,7 +1784,7 @@ section {
 
 .resources-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
   gap: 22px;
 }
 
@@ -1984,6 +2011,9 @@ section {
 .nova-modal-backdrop {
   position: fixed;
   inset: 0;
+  width: 100vw;
+  max-width: 100%;
+  box-sizing: border-box;
   background: rgba(0, 2, 8, 0.88);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -1991,7 +2021,7 @@ section {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: clamp(12px, 3vw, 24px);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.25s ease;
@@ -2006,11 +2036,13 @@ section {
   background: #060c18;
   border: 1px solid var(--border-cyan);
   border-radius: var(--radius-panel);
-  max-width: 700px;
+  max-width: min(700px, calc(100vw - 24px));
   width: 100%;
+  box-sizing: border-box;
   max-height: 85vh;
+  max-height: 85dvh;
   overflow-y: auto;
-  padding: 38px;
+  padding: clamp(20px, 4vw, 38px);
   position: relative;
 }
 
@@ -2182,23 +2214,113 @@ section {
   .nebula-layout,
   .blackhole-layout,
   .observatory-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  .blackhole-viewport-wrapper,
+  .planet-3d-viewport-wrapper,
+  .galaxy-viewport-wrapper,
+  .nebula-canvas-wrapper,
+  .planet-telemetry-panel,
+  .blackhole-info-card,
+  .galaxy-info-card,
+  .scale-explorer-card {
+    min-width: 0 !important;
   }
   .deep-space-container {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
+/* Compact Desktop: 1025px - 1200px */
+@media (max-width: 1200px) {
+  .brand-tagline {
+    display: none;
+  }
+  .navbar-nav-links {
+    gap: clamp(12px, 1.8vw, 20px);
+  }
+  .nav-dropdown-trigger {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+  }
+  .navbar-actions {
+    gap: 8px;
+  }
+  .sound-btn-label,
+  .mode-toggle-text {
+    display: none;
+  }
+  #search-trigger-btn span:last-child {
+    display: none;
+  }
+  #search-trigger-btn::after {
+    content: '[SEARCH]';
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+  }
+}
+
+/* Tablet & Compact Viewports: <= 1024px */
+@media (max-width: 1024px) {
+  .navbar-nav-links {
+    display: none !important;
+  }
+  .mobile-menu-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: rgba(92, 200, 255, 0.08);
+    border: 1px solid var(--border-cyan);
+    border-radius: var(--radius-tech);
+    color: var(--accent-cyan);
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .mobile-menu-btn:hover {
+    background: rgba(92, 200, 255, 0.2);
+    border-color: var(--accent-bright);
+  }
+  #hud-sound-toggle-btn,
+  #hud-mode-toggle-btn {
+    display: none !important;
+  }
+  #hud-social-btn,
+  #hud-agencies-btn,
+  #search-trigger-btn {
+    display: flex !important;
+  }
+  .navbar-actions {
+    gap: 8px;
+  }
+  .hud-pill-btn {
+    padding: 5px 10px;
+    font-size: 10px;
+  }
+}
+
+/* Mobile Screens: <= 768px */
 @media (max-width: 768px) {
   .nova-navbar {
-    padding: 0 16px;
+    padding: 0 clamp(10px, 3vw, 16px);
     height: 60px;
+  }
+  #hud-social-btn,
+  #hud-agencies-btn {
+    display: none !important;
+  }
+  #search-trigger-btn::after {
+    display: none;
+  }
+  .hud-pill-btn {
+    padding: 4px 8px;
+    font-size: 9px;
   }
   .navbar-nav-links {
     display: none;
-  }
-  .mobile-menu-btn {
-    display: block;
   }
   .scroll-section-tracker {
     display: none;
@@ -2217,25 +2339,56 @@ section {
     margin-bottom: 24px;
   }
 
+  /* Disable desktop reticle cursor on mobile/touch screens */
+  .nova-cursor-dot,
+  .nova-cursor-ring,
+  .nova-cursor-ripple {
+    display: none !important;
+  }
+
   /* 3D Viewport wrappers on mobile - compact height & pan-y gesture freedom */
   .planet-3d-viewport-wrapper,
   .galaxy-viewport-wrapper,
   .blackhole-viewport-wrapper {
     height: 340px !important;
     touch-action: pan-y;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .planet-3d-viewport-wrapper canvas,
+  .galaxy-viewport-wrapper canvas,
+  .blackhole-viewport-wrapper canvas,
+  #blackhole-3d-viewport,
+  #blackhole-3d-viewport canvas {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
   .solar-viewport-container {
     height: 380px !important;
     touch-action: pan-y;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .solar-viewport-container canvas {
+    max-width: 100% !important;
   }
   .nebula-canvas-wrapper {
     height: 300px !important;
     touch-action: pan-y;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .nebula-canvas-wrapper canvas {
+    max-width: 100% !important;
   }
   .return-earth-canvas-wrapper {
-    width: 240px;
-    height: 240px;
+    width: min(240px, calc(100vw - 40px));
+    height: min(240px, calc(100vw - 40px));
     touch-action: pan-y;
+    box-sizing: border-box;
   }
 
   /* Hero adjustments for mobile screens */
@@ -2293,12 +2446,25 @@ section {
   .galaxy-info-card,
   .nebula-stepper-panel,
   .blackhole-info-card,
+  .planet-telemetry-panel,
   .planet-telemetry-card,
   .scale-explorer-card {
-    padding: 22px 18px !important;
+    padding: clamp(14px, 3.5vw, 22px) clamp(12px, 3vw, 18px) !important;
     backdrop-filter: blur(8px) !important;
     -webkit-backdrop-filter: blur(8px) !important;
     background: rgba(3, 7, 18, 0.90) !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .telemetry-specs-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 120px), 1fr)) !important;
+    gap: 12px !important;
+  }
+
+  .spec-label {
+    word-break: break-word;
+    overflow-wrap: break-word;
   }
 
   .planet-drag-hint {
@@ -2365,8 +2531,10 @@ section {
 
 /* Auth Modal Window & Controls */
 .auth-modal-window {
-  max-width: 460px !important;
-  padding: 32px 28px !important;
+  max-width: min(460px, calc(100vw - 24px)) !important;
+  width: 100% !important;
+  box-sizing: border-box;
+  padding: clamp(20px, 4vw, 32px) clamp(16px, 4vw, 28px) !important;
 }
 
 .auth-tabs-row {
@@ -2469,9 +2637,10 @@ section {
 
 /* Gallery Section Layout */
 .gallery-section {
-  padding: 120px 48px;
+  padding: clamp(60px, 8vw, 120px) clamp(16px, 4vw, 48px);
   max-width: 1400px;
   margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .gallery-auth-prompt-card,
@@ -2479,11 +2648,13 @@ section {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-tech);
-  padding: 32px 36px;
+  padding: clamp(20px, 4vw, 32px) clamp(14px, 3.5vw, 36px);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   margin-top: 36px;
   margin-bottom: 48px;
+  box-sizing: border-box;
+  max-width: 100%;
 }
 
 .gallery-auth-prompt-card {
@@ -2491,6 +2662,12 @@ section {
   max-width: 680px;
   margin-left: auto;
   margin-right: auto;
+}
+
+.gallery-auth-prompt-card .btn-spacecraft-primary {
+  max-width: 100%;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .form-header-row {
@@ -2643,7 +2820,7 @@ section {
 /* Gallery Photo Cards Grid */
 .gallery-cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
   gap: 28px;
   margin-top: 18px;
 }
@@ -3301,7 +3478,7 @@ section {
 
 .agencies-directory-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
   gap: 24px;
 }
 

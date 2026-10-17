@@ -119,16 +119,21 @@
    ============================================================================== */
 .post-card {
   width: 100%;
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   background: var(--bg-card, rgba(11, 18, 33, 0.75));
   border: var(--border-hairline, 1px solid rgba(255, 255, 255, 0.08));
   border-radius: var(--radius-tech, 4px);
-  padding: 18px 20px;
+  padding: clamp(12px, 3vw, 20px);
   position: relative;
   cursor: pointer;
   outline: none;
   backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-sizing: border-box;
+  overflow-wrap: break-word;
+  word-break: break-word;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, opacity 0.25s ease;
 }
 
@@ -186,6 +191,7 @@
   flex-direction: column;
   gap: 8px;
   margin-bottom: 12px;
+  width: 100%;
 }
 
 .post-header-top-row {
@@ -194,6 +200,7 @@
   justify-content: space-between;
   width: 100%;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .post-header-left {
@@ -486,15 +493,18 @@
   align-items: center !important;
   justify-content: space-between !important;
   border-top: var(--border-subtle, 1px solid rgba(255, 255, 255, 0.06)) !important;
-  padding-top: 12px !important;
+  padding-top: 10px !important;
   font-family: var(--font-mono, monospace) !important;
   width: 100% !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
 }
 
 .post-action-group {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: clamp(6px, 1.5vw, 12px);
+  flex-wrap: wrap;
 }
 
 .btn-post-action {
@@ -503,11 +513,19 @@
   color: var(--text-muted, #94a3b8);
   font-family: var(--font-mono, monospace);
   font-size: 11px;
-  padding: 4px 8px;
+  padding: 6px clamp(6px, 1.2vw, 10px);
+  min-height: 38px;
+  min-width: 38px;
   border-radius: var(--radius-tech, 3px);
   cursor: pointer;
   transition: all 0.15s ease;
   user-select: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  box-sizing: border-box;
+  touch-action: manipulation;
 }
 
 .btn-post-action:hover {
@@ -543,14 +561,31 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
-  padding: 11px 16px;
+  gap: 12px;
+  padding: clamp(8px, 2vw, 11px) clamp(10px, 2.5vw, 16px);
   border-bottom: var(--border-subtle, 1px solid rgba(255, 255, 255, 0.06));
   background: var(--bg-card, rgba(11, 18, 33, 0.75));
   border-radius: var(--radius-tech, 3px);
   margin-bottom: 6px;
   cursor: pointer;
+  box-sizing: border-box;
   transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+@media (max-width: 600px) {
+  .compact-post-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .compact-post-left {
+    width: 100%;
+  }
+  .compact-post-meta {
+    width: 100%;
+    justify-content: space-between;
+    padding-left: 28px;
+  }
 }
 
 .compact-post-item:hover {
@@ -707,18 +742,22 @@
   background: var(--bg-card, rgba(11, 18, 33, 0.85));
   border: var(--border-hairline, 1px solid rgba(255, 255, 255, 0.08));
   border-radius: var(--radius-tech, 4px);
-  padding: 24px 28px;
+  padding: clamp(14px, 4vw, 28px);
   backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   box-sizing: border-box;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .full-post-title {
-  font-size: 24px;
+  font-size: clamp(18px, 4.5vw, 24px);
   font-weight: 700;
   color: #fff;
   line-height: 1.35;
   margin: 12px 0 16px 0;
   word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .full-post-body {

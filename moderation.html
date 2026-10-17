@@ -44,6 +44,26 @@
       border-top: var(--border-subtle);
       padding-top: 12px;
       margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .agency-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 600px) {
+      .agency-form-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .curator-actions-bar {
+        flex-direction: column;
+      }
+      .curator-actions-bar button {
+        width: 100%;
+        justify-content: center;
+      }
     }
   </style>
 </head>
@@ -95,7 +115,7 @@
             <textarea class="form-textarea" id="mod-agency-desc" rows="3" required></textarea>
           </div>
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+          <div class="agency-form-grid">
             <div class="form-group" style="margin-bottom: 0;">
               <label class="form-label" for="mod-agency-website">OFFICIAL WEBSITE URL</label>
               <input type="url" class="form-input" id="mod-agency-website" required />

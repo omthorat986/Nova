@@ -55,6 +55,7 @@ This document details the automated integration and regression test matrix for t
 | **45** | S3 Account Deletion Purge | Deleting observer account purges all user S3 images from bucket | `DELETE /api/me` | HTTP 200 & zero remaining keys | ✅ PASS |
 | **46** | S3 Readiness Probe (503) | `/ready` probe returns 503 Service Unavailable when S3 bucket unreachable | `GET /ready` | HTTP 503 degraded / 200 ready | ✅ PASS |
 | **47** | CLI Curator Creation & RBAC | Non-interactive create-curator with bcrypt hash, password policies, audit log, and RBAC | CLI & API | HTTP 200 curator / HTTP 403 observer | ✅ PASS |
+| **48** | Sensitive Files Blocked | Direct HTTP requests to .db, .db-wal, .db-shm, .py, .env, and .log files blocked | HTTP GET | HTTP 403 / 404 on sensitive endpoints | ✅ PASS |
 
 ---
 

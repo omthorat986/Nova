@@ -12,6 +12,7 @@
 # 8. Server header banner suppression (no version leaks)
 # 9. Direct S3 public access block (Expects HTTP 403 AccessDenied)
 # 10. Public pages availability (Home, Social, Agencies, Profile, Error 404)
+# 11. Sensitive files direct access blocked (/data/nova.db, /nova.db, /server.py, /.env, /logs/app.log -> 403 or 404)
 # Outputs a formatted PASS/FAIL summary table for report evidence.
 # ==============================================================================
 
@@ -152,6 +153,27 @@ if [[ "${INDEX_CODE}" == "200" && "${SOCIAL_CODE}" == "200" && "${AGENCIES_CODE}
     record_result "PASS" "Public Routes Availability" "Home (200), Social (200), Agencies (200), 404 (404)"
 else
     record_result "FAIL" "Public Routes Availability" "Index=${INDEX_CODE}, Social=${SOCIAL_CODE}, 404=${NOT_FOUND_CODE}"
+fi
+
+# Test 11: Direct Access to Sensitive Files Blocked (HTTP 403 or 404)
+SENSITIVE_FILES=("/data/nova.db" "/nova.db" "/server.py" "/.env" "/logs/app.log")
+ALL_SENSITIVE_BLOCKED=true
+SENSITIVE_DETAILS=""
+
+for s_path in "${SENSITIVE_FILES[@]}"; do
+    STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${BASE_URL}${s_path}" || echo "000")
+    if [[ "${STATUS_CODE}" == "403" || "${STATUS_CODE}" == "404" ]]; then
+        SENSITIVE_DETAILS+="${s_path}=${STATUS_CODE} "
+    else
+        ALL_SENSITIVE_BLOCKED=false
+        SENSITIVE_DETAILS+="${s_path}=${STATUS_CODE}(LEAK) "
+    fi
+done
+
+if [[ "${ALL_SENSITIVE_BLOCKED}" == "true" ]]; then
+    record_result "PASS" "Sensitive Files Blocked" "${SENSITIVE_DETAILS}"
+else
+    record_result "FAIL" "Sensitive Files Blocked" "Unprotected: ${SENSITIVE_DETAILS}"
 fi
 
 echo ""

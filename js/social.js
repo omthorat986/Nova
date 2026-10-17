@@ -332,8 +332,94 @@ export const SharedNav = {
           <div id="nav-auth-controls">
             <div class="skeleton-box" style="width: 110px; height: 32px;"></div>
           </div>
+
+          <button type="button" class="nav-mobile-toggle" id="nav-mobile-toggle" aria-label="Toggle navigation drawer" aria-expanded="false" title="Menu">
+            <span class="nav-toggle-icon">☰</span>
+          </button>
         </div>
       </header>
+
+      <!-- Full-screen / Off-canvas Mobile Navigation Drawer -->
+      <div class="shared-mobile-drawer" id="shared-mobile-drawer" aria-hidden="true">
+        <div class="drawer-backdrop" id="nav-drawer-backdrop"></div>
+        <aside class="drawer-panel" role="dialog" aria-modal="true" aria-label="Navigation Drawer">
+          <div class="drawer-header">
+            <div class="drawer-brand">
+              <div class="brand-orbital-icon"></div>
+              <div class="brand-title-wrap">
+                <span class="brand-logo-text">NOVA</span>
+                <span class="brand-subtext">// OBSERVATORY</span>
+              </div>
+            </div>
+            <button type="button" class="drawer-close-btn" id="nav-drawer-close-btn" aria-label="Close menu">✕</button>
+          </div>
+
+          <div class="drawer-search-wrap">
+            <form class="drawer-search-form" action="/agencies" method="GET">
+              <input type="search" name="q" class="drawer-search-input" placeholder="Search dispatches, agencies..." aria-label="Search" autocomplete="off" />
+              <button type="submit" class="drawer-search-btn" aria-label="Submit search">⌕</button>
+            </form>
+          </div>
+
+          <nav class="drawer-nav-menu">
+            <div class="drawer-group-label">// PRIMARY NAVIGATION</div>
+            <a href="/" class="drawer-nav-item ${currentPath === '/' || currentPath === '/index.html' ? 'active' : ''}">
+              <span class="mono-label">[01]</span>
+              <span>HOME BASE</span>
+            </a>
+            <a href="/social" class="drawer-nav-item ${currentPath.startsWith('/social') || currentPath.startsWith('/popular') ? 'active' : ''}">
+              <span class="mono-label">[02]</span>
+              <span>SOCIAL FEED</span>
+            </a>
+            <a href="/agencies" class="drawer-nav-item ${currentPath.startsWith('/agencies') || currentPath.startsWith('/agency') ? 'active' : ''}">
+              <span class="mono-label">[03]</span>
+              <span>SPACE AGENCIES</span>
+            </a>
+            <a href="/submit" class="drawer-nav-item ${currentPath.startsWith('/submit') ? 'active' : ''}">
+              <span class="mono-label">[04]</span>
+              <span>TRANSMIT DISPATCH</span>
+            </a>
+
+            <div class="drawer-group-label">// CHANNELS & TOPICS</div>
+            <a href="/popular" class="drawer-nav-item">
+              <span class="mono-sublabel">◈</span>
+              <span>Popular Dispatches</span>
+            </a>
+            <a href="/social?cat=Launches" class="drawer-nav-item">
+              <span class="mono-sublabel">🚀</span>
+              <span>Launch Manifest</span>
+            </a>
+            <a href="/social?cat=Astronomy" class="drawer-nav-item">
+              <span class="mono-sublabel">🔭</span>
+              <span>Astronomy & JWST</span>
+            </a>
+            <a href="/social?cat=Missions" class="drawer-nav-item">
+              <span class="mono-sublabel">🛰</span>
+              <span>Active Missions</span>
+            </a>
+            <a href="/agency/general" class="drawer-nav-item">
+              <span class="mono-sublabel">[GEN]</span>
+              <span>General Space Channel</span>
+            </a>
+
+            <div class="drawer-group-label">// STATION PROTOCOLS</div>
+            <a href="/contact" class="drawer-nav-item">
+              <span class="mono-sublabel">📡</span>
+              <span>Mission Control Contact</span>
+            </a>
+            <a href="/privacy" class="drawer-nav-item">
+              <span class="mono-sublabel">🛡</span>
+              <span>Privacy Protocol</span>
+            </a>
+            <a href="/terms" class="drawer-nav-item">
+              <span class="mono-sublabel">📜</span>
+              <span>Terms of Use</span>
+            </a>
+          </nav>
+
+          <div class="drawer-auth-box" id="drawer-auth-box"></div>
+        </aside>
+      </div>
     `;
 
     // Ensure mobile Floating Action Button (FAB) exists on the page
@@ -371,15 +457,23 @@ export const SharedNav = {
 
       // Scroll direction detection: hide on scroll down, show on scroll up
       let lastScrollY = window.scrollY;
-      window.addEventListener('scroll', () => {
-        const currentY = window.scrollY;
+      const updateFabVisibility = (currentY) => {
         if (currentY > lastScrollY && currentY > 60) {
           fab.classList.add('fab-hidden');
         } else {
           fab.classList.remove('fab-hidden');
         }
         lastScrollY = currentY;
+      };
+      window.addEventListener('scroll', () => {
+        updateFabVisibility(window.scrollY);
       }, { passive: true });
+      const centerFeed = document.querySelector('.social-center-feed');
+      if (centerFeed) {
+        centerFeed.addEventListener('scroll', () => {
+          updateFabVisibility(centerFeed.scrollTop);
+        }, { passive: true });
+      }
     }
   },
 
@@ -407,6 +501,45 @@ export const SharedNav = {
         }
       });
     }
+
+    // Mobile Navigation Drawer Toggling
+    const toggleBtn = document.getElementById('nav-mobile-toggle');
+    const drawer = document.getElementById('shared-mobile-drawer');
+    const closeBtn = document.getElementById('nav-drawer-close-btn');
+    const backdrop = document.getElementById('nav-drawer-backdrop');
+
+    const openDrawer = () => {
+      if (!drawer) return;
+      drawer.classList.add('open');
+      drawer.setAttribute('aria-hidden', 'false');
+      if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
+      document.body.classList.add('nav-drawer-locked');
+    };
+
+    const closeDrawer = () => {
+      if (!drawer) return;
+      drawer.classList.remove('open');
+      drawer.setAttribute('aria-hidden', 'true');
+      if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
+      document.body.classList.remove('nav-drawer-locked');
+    };
+
+    if (toggleBtn) toggleBtn.addEventListener('click', openDrawer);
+    if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+    if (backdrop) backdrop.addEventListener('click', closeDrawer);
+
+    // Close on link click inside drawer
+    if (drawer) {
+      drawer.querySelectorAll('.drawer-nav-item').forEach(item => {
+        item.addEventListener('click', closeDrawer);
+      });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && drawer && drawer.classList.contains('open')) {
+        closeDrawer();
+      }
+    });
   },
 
   setupKeyboardShortcuts() {
@@ -428,9 +561,19 @@ export const SharedNav = {
         const tag = active ? active.tagName.toLowerCase() : '';
         if (tag !== 'input' && tag !== 'textarea' && tag !== 'select') {
           const searchInput = document.getElementById('nav-search-input');
-          if (searchInput) {
+          if (searchInput && searchInput.offsetParent !== null) {
             e.preventDefault();
             searchInput.focus();
+          } else {
+            const drawer = document.getElementById('shared-mobile-drawer');
+            const drawerSearch = document.querySelector('.drawer-search-input');
+            if (drawer && drawerSearch) {
+              e.preventDefault();
+              drawer.classList.add('open');
+              drawer.setAttribute('aria-hidden', 'false');
+              document.body.style.overflow = 'hidden';
+              drawerSearch.focus();
+            }
           }
         }
       }
@@ -456,15 +599,26 @@ export const SharedNav = {
 
   renderAuthControls() {
     const controls = document.getElementById('nav-auth-controls');
-    if (!controls) return;
+    const drawerAuth = document.getElementById('drawer-auth-box');
+    const nextParam = encodeURIComponent(window.location.pathname + window.location.search);
 
     if (!AuthState.isLoggedIn()) {
-      const nextParam = encodeURIComponent(window.location.pathname + window.location.search);
-      controls.innerHTML = `
-        <a href="/login?next=${nextParam}" class="btn-nav-auth">
-          <span>[AUTH // LOGIN]</span>
-        </a>
-      `;
+      if (controls) {
+        controls.innerHTML = `
+          <a href="/login?next=${nextParam}" class="btn-nav-auth">
+            <span>[AUTH // LOGIN]</span>
+          </a>
+        `;
+      }
+      if (drawerAuth) {
+        drawerAuth.innerHTML = `
+          <div class="drawer-group-label">// AUTHENTICATION</div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <a href="/login?next=${nextParam}" class="btn-tech btn-tech-primary" style="width:100%; justify-content:center;">[AUTH // LOG IN]</a>
+            <a href="/register?next=${nextParam}" class="btn-tech btn-tech-secondary" style="width:100%; justify-content:center;">[REGISTER OBSERVER]</a>
+          </div>
+        `;
+      }
       return;
     }
 
@@ -472,56 +626,98 @@ export const SharedNav = {
     const roleBadge = u.role !== 'observer' ? `<span class="user-badge-role ${u.role}">${escapeHTML(u.role.toUpperCase())}</span>` : '';
     const avatarHelper = window.NovaAvatar || (typeof NovaAvatar !== 'undefined' ? NovaAvatar : null);
     const avatarHtml = avatarHelper ? avatarHelper.render(u, { size: 'xs', link: false }) : '';
+    const avatarHtmlLg = avatarHelper ? avatarHelper.render(u, { size: 'sm', link: false }) : '';
 
-    controls.innerHTML = `
-      <button class="nav-user-dropdown-btn" id="nav-user-menu-btn" aria-expanded="false" style="display:inline-flex; align-items:center; gap:8px;">
-        ${avatarHtml}
-        <span>[USER // @${escapeHTML(u.nickname)}]</span>
-        ${roleBadge}
-        <span style="font-size: 8px;">▾</span>
-      </button>
-
-      <div class="dropdown-menu-box" id="nav-user-dropdown-menu">
-        <a href="/u/${encodeURIComponent(u.nickname)}" class="dropdown-menu-item">
-          <span>// PROFILE</span>
-          <span class="mono-label">@${escapeHTML(u.nickname)}</span>
-        </a>
-        <a href="/u/${encodeURIComponent(u.nickname)}?tab=outreach" class="dropdown-menu-item">
-          <span>// MY OUTREACH</span>
-          <span class="mono-label">LOGS</span>
-        </a>
-        ${AuthState.isCurator() ? `
-          <a href="/moderation" class="dropdown-menu-item" style="color:var(--accent-gold)">
-            <span>// MODERATION</span>
-            <span class="mono-label" style="color:var(--accent-gold)">QUEUE</span>
-          </a>
-        ` : ''}
-        <div class="dropdown-divider"></div>
-        <button class="dropdown-menu-item" id="nav-logout-btn" style="color:var(--accent-alert)">
-          <span>// LOGOUT</span>
-          <span>⎋</span>
+    if (controls) {
+      controls.innerHTML = `
+        <button class="nav-user-dropdown-btn" id="nav-user-menu-btn" aria-expanded="false" style="display:inline-flex; align-items:center; gap:8px;">
+          ${avatarHtml}
+          <span class="nav-user-name-text">@${escapeHTML(u.nickname)}</span>
+          ${roleBadge}
+          <span style="font-size: 8px;">▾</span>
         </button>
-      </div>
-    `;
 
-    const btn = document.getElementById('nav-user-menu-btn');
-    const menu = document.getElementById('nav-user-dropdown-menu');
-    const logoutBtn = document.getElementById('nav-logout-btn');
+        <div class="dropdown-menu-box" id="nav-user-dropdown-menu">
+          <a href="/u/${encodeURIComponent(u.nickname)}" class="dropdown-menu-item">
+            <span>// PROFILE</span>
+            <span class="mono-label">@${escapeHTML(u.nickname)}</span>
+          </a>
+          <a href="/u/${encodeURIComponent(u.nickname)}?tab=outreach" class="dropdown-menu-item">
+            <span>// MY OUTREACH</span>
+            <span class="mono-label">LOGS</span>
+          </a>
+          ${AuthState.isCurator() ? `
+            <a href="/moderation" class="dropdown-menu-item" style="color:var(--accent-gold)">
+              <span>// MODERATION</span>
+              <span class="mono-label" style="color:var(--accent-gold)">QUEUE</span>
+            </a>
+          ` : ''}
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-menu-item" id="nav-logout-btn" style="color:var(--accent-alert)">
+            <span>// LOGOUT</span>
+            <span>⎋</span>
+          </button>
+        </div>
+      `;
 
-    if (btn && menu) {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        menu.classList.toggle('open');
-      });
-      document.addEventListener('click', (e) => {
-        if (!menu.contains(e.target) && e.target !== btn) {
-          menu.classList.remove('open');
-        }
-      });
+      const btn = document.getElementById('nav-user-menu-btn');
+      const menu = document.getElementById('nav-user-dropdown-menu');
+      const logoutBtn = document.getElementById('nav-logout-btn');
+
+      if (btn && menu) {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          menu.classList.toggle('open');
+        });
+        document.addEventListener('click', (e) => {
+          if (!menu.contains(e.target) && e.target !== btn) {
+            menu.classList.remove('open');
+          }
+        });
+      }
+
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => AuthState.logout());
+      }
     }
 
-    if (logoutBtn) {
-      logoutBtn.addEventListener('click', () => AuthState.logout());
+    if (drawerAuth) {
+      drawerAuth.innerHTML = `
+        <div class="drawer-group-label">// OBSERVER SESSION</div>
+        <div class="drawer-user-card">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+            ${avatarHtmlLg}
+            <div style="display:flex; flex-direction:column; min-width:0;">
+              <span style="font-family:var(--font-mono); font-size:12px; font-weight:700; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">@${escapeHTML(u.nickname)}</span>
+              <span style="font-family:var(--font-mono); font-size:10px; color:var(--accent-cyan);">${escapeHTML(u.role.toUpperCase())}</span>
+            </div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <a href="/u/${encodeURIComponent(u.nickname)}" class="drawer-nav-item">
+              <span class="mono-sublabel">👤</span>
+              <span>View Profile</span>
+            </a>
+            <a href="/u/${encodeURIComponent(u.nickname)}?tab=outreach" class="drawer-nav-item">
+              <span class="mono-sublabel">📡</span>
+              <span>My Outreach Telemetry</span>
+            </a>
+            ${AuthState.isCurator() ? `
+              <a href="/moderation" class="drawer-nav-item" style="color:var(--accent-gold);">
+                <span class="mono-sublabel" style="color:var(--accent-gold);">⚖</span>
+                <span>Moderation Console</span>
+              </a>
+            ` : ''}
+            <button type="button" class="btn-tech btn-tech-secondary" id="drawer-logout-btn" style="margin-top:8px; width:100%; justify-content:center; color:var(--accent-alert); border-color:rgba(239,68,68,0.3);">
+              <span>[LOGOUT // TERMINATE SESSION]</span>
+            </button>
+          </div>
+        </div>
+      `;
+
+      const drawerLogoutBtn = document.getElementById('drawer-logout-btn');
+      if (drawerLogoutBtn) {
+        drawerLogoutBtn.addEventListener('click', () => AuthState.logout());
+      }
     }
   },
 

@@ -80,7 +80,8 @@ DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 LOGS_DIR = os.path.join(DIRECTORY, 'logs')
 LOCAL_UPLOADS_DIR = os.path.join(DIRECTORY, 'local_uploads')
 MIGRATIONS_DIR = os.path.join(DIRECTORY, 'migrations')
-DB_PATH = os.environ.get('NOVA_DB_PATH', os.path.join(DIRECTORY, 'nova.db'))
+default_db = '/var/lib/nova/nova.db' if os.environ.get('APP_ENV', os.environ.get('ENV', '')).lower() == 'production' else os.path.join(DIRECTORY, 'nova.db')
+DB_PATH = os.environ.get('NOVA_DB_PATH', default_db)
 
 os.makedirs(LOGS_DIR, exist_ok=True)
 os.makedirs(LOCAL_UPLOADS_DIR, exist_ok=True)
@@ -1097,10 +1098,13 @@ class StorageEngine:
             return None
 
     def ping(self):
-        """Readiness probe checking storage reachability."""
+        """
+        Readiness probe checking storage reachability.
+        Uses scoped list_objects_v2 with 'uploads/' prefix adhering to prefix-limited IAM permissions.
+        """
         if self.mode == 's3':
             try:
-                self.s3_client.head_bucket(Bucket=self.bucket)
+                self.s3_client.list_objects_v2(Bucket=self.bucket, Prefix="uploads/", MaxKeys=1)
                 return True
             except Exception:
                 return False
@@ -1540,6 +1544,9 @@ def serve_js(filename):
 
 @app.route('/data/<path:filename>')
 def serve_data(filename):
+    lower_fn = filename.lower()
+    if lower_fn.endswith(('.db', '.db-wal', '.db-shm', '.sqlite', '.sqlite3', '.py', '.sql', '.log')) or '/.' in ('/' + lower_fn):
+        abort(403)
     return send_from_directory(os.path.join(DIRECTORY, 'data'), filename)
 
 @app.route('/local_uploads/<path:filename>')
@@ -4628,6 +4635,16 @@ class MockS3Client:
             raise ClientError({'Error': {'Code': '404', 'Message': 'Not Found'}}, 'HeadBucket')
         return {}
 
+    def list_objects_v2(self, Bucket, Prefix="", MaxKeys=1000):
+        if not self.bucket_reachable:
+            raise ClientError({'Error': {'Code': 'NoSuchBucket', 'Message': 'Bucket unreachable'}}, 'ListObjectsV2')
+        matching = [
+            {'Key': k, 'Size': len(v['Body'])}
+            for k, v in self.objects.items()
+            if k.startswith(Prefix)
+        ][:MaxKeys]
+        return {'Contents': matching, 'KeyCount': len(matching)}
+
     def generate_presigned_url(self, ClientMethod, Params, ExpiresIn=300):
         key = Params.get('Key', '')
         bucket = Params.get('Bucket', '')
@@ -5671,6 +5688,15 @@ def run_automated_tests(port):
             record_test("45. S3 Mode: Account Deletion Cleanup Purges All User S3 Objects", del_ok and user_s3_purged)
 
             # 46. /ready probe returns 503 Service Unavailable when bucket unreachable
+            mock_s3.list_v2_called = False
+            orig_list = mock_s3.list_objects_v2
+            def tracking_list(*args, **kwargs):
+                mock_s3.list_v2_called = True
+                assert kwargs.get('Prefix') == 'uploads/', f"Expected Prefix='uploads/', got {kwargs.get('Prefix')}"
+                assert kwargs.get('MaxKeys') == 1, f"Expected MaxKeys=1, got {kwargs.get('MaxKeys')}"
+                return orig_list(*args, **kwargs)
+            mock_s3.list_objects_v2 = tracking_list
+
             mock_s3.bucket_reachable = False
             r_ready_unreachable = requests.get(f"{base_url}/ready", timeout=3)
             probe_503 = (r_ready_unreachable.status_code == 503)
@@ -5680,7 +5706,8 @@ def run_automated_tests(port):
             r_ready_online = requests.get(f"{base_url}/ready", timeout=3)
             probe_200 = (r_ready_online.status_code == 200)
             payload_online = (r_ready_online.json().get('storage') == 's3_online')
-            record_test("46. S3 Mode: /ready Probe Returns 503 When Bucket Unreachable", probe_503 and payload_degraded and probe_200 and payload_online)
+            used_list_v2 = getattr(mock_s3, 'list_v2_called', False)
+            record_test("46. S3 Mode: /ready Probe (list_objects_v2 Prefix uploads/) 503/200", probe_503 and payload_degraded and probe_200 and payload_online and used_list_v2)
 
         finally:
             storage.mode = original_storage_mode
@@ -5799,6 +5826,16 @@ def run_automated_tests(port):
             weak_pass_rejected
         )
         record_test("47. CLI create-curator Non-Interactive Execution, Auth & Curator-Only Route RBAC", test_47_passed)
+
+        # 48. Direct Access to Sensitive Files Blocked (403 / 404)
+        sensitive_probe_paths = ["/data/nova.db", "/nova.db", "/server.py", "/.env", "/logs/app.log"]
+        sensitive_all_blocked = True
+        for sp in sensitive_probe_paths:
+            r_sens = requests.get(f"{base_url}{sp}", timeout=3)
+            if r_sens.status_code not in (403, 404):
+                sensitive_all_blocked = False
+                break
+        record_test("48. Direct Access to Sensitive Files Blocked (/data/nova.db, /nova.db, /server.py, /.env, /logs/app.log -> 403/404)", sensitive_all_blocked)
 
 
     finally:

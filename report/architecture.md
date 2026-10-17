@@ -36,8 +36,9 @@ NOVA is an astrophysical research observatory, celestial planetarium, and deep-s
                                │    [ Flask Web Backend ]    │
                                │              │              │
                                │       [ SQLite 3 DB ]       │
-                               │   (WAL Mode, Busy 5000ms,   │
-                               │    Foreign Keys Enabled)    │
+                               │  (/var/lib/nova/nova.db,    │
+                               │   WAL Mode, Busy 5000ms,    │
+                               │   Foreign Keys Enabled)     │
                                └──────────────┬──────────────┘
                                               │
                        ┌──────────────────────┼──────────────────────┐
@@ -104,6 +105,7 @@ The database is managed exclusively through numbered, idempotent SQL migrations 
 | **Proxy Header Trust** | `ProxyFix(x_for=1, x_proto=1, x_host=1, x_port=1)` in Flask | IP Spoofing & Cache Poisoning |
 | **Cloud Credential Guard** | IAM Instance Profile with Default Credential Chain (0 keys in code) | Secret Leakage |
 | **SSRF Neutralization** | EC2 IMDSv2 mandatory (`HttpTokens=required`) | Metadata Exfiltration |
+| **Database Isolation** | `/var/lib/nova/nova.db` outside Nginx web root, owner `nova:nova`, mode `750` | Direct Database Download & Source Exposure |
 
 ---
 

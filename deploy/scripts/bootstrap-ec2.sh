@@ -109,6 +109,7 @@ fi
 mkdir -p /opt/nova
 mkdir -p /opt/nova/logs
 mkdir -p /opt/nova/data
+mkdir -p /var/lib/nova
 mkdir -p /etc/nova
 
 # Create virtualenv using pinned Python binary if not already present
@@ -121,19 +122,22 @@ fi
 chmod 750 /opt/nova
 chown -R nova:nova /opt/nova
 
-# 6. Configure Firewall if ufw available
-if command -v ufw &>/dev/null; then
-    echo "🛡️ [5/8] Configuring UFW Firewall..."
-    ufw default deny incoming
-    ufw default allow outgoing
-    ufw allow 22/tcp comment "SSH administration"
-    ufw allow 80/tcp comment "HTTP Let's Encrypt / Redirect"
-    ufw allow 443/tcp comment "HTTPS Web Traffic"
-    ufw --force enable
-    echo "✅ UFW Firewall active."
-else
-    echo "ℹ️ UFW not present (traffic filtered at AWS Security Group level)."
+# Secure production database directory outside Nginx web root
+chmod 750 /var/lib/nova
+chown -R nova:nova /var/lib/nova
+echo "✅ Production database directory /var/lib/nova secured (mode 750, owner nova:nova)."
+
+# Add Nginx user (www-data / nginx) to nova group for static asset traversal
+if id -u www-data &>/dev/null; then
+    usermod -a -G nova www-data || true
+    echo "✅ Added 'www-data' to group 'nova'."
+elif id -u nginx &>/dev/null; then
+    usermod -a -G nova nginx || true
+    echo "✅ Added 'nginx' to group 'nova'."
 fi
+
+# 6. Firewall Configuration (Managed at AWS Security Group Level)
+echo "🛡️ [5/8] Firewall managed via AWS Security Group (ports 22, 80, 443). Skipping UFW configuration."
 
 # 7. Install AWS CloudWatch Agent
 echo "📊 [6/8] Installing AWS CloudWatch Unified Agent..."

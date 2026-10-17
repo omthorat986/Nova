@@ -13,7 +13,7 @@ if [[ -f /etc/nova/nova.env ]]; then
     source /etc/nova/nova.env
 fi
 
-DB_PATH="${NOVA_DB_PATH:-/opt/nova/data/nova.db}"
+DB_PATH="${NOVA_DB_PATH:-/var/lib/nova/nova.db}"
 BUCKET_NAME="${S3_BUCKET:-}"
 AWS_REGION="${AWS_REGION:-us-east-1}"
 

@@ -21,14 +21,14 @@
       background: var(--bg-card);
     }
     .agency-gradient-strip {
-      height: 140px;
+      height: clamp(100px, 18vw, 150px);
       width: 100%;
       position: relative;
       background: linear-gradient(135deg, #0b3d91 0%, #1e1b4b 60%, #030712 100%);
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
     .agency-hero-content {
-      padding: 0 28px 24px;
+      padding: 0 clamp(14px, 3.5vw, 28px) 24px;
       position: relative;
     }
     .agency-hero-top-row {
@@ -63,6 +63,16 @@
       align-items: center;
       gap: 12px;
       flex-wrap: wrap;
+    }
+    @media (max-width: 520px) {
+      .agency-hero-top-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .agency-hero-actions-wrap {
+        width: 100%;
+        justify-content: space-between;
+      }
     }
     .agency-hero-title-area {
       margin-bottom: 12px;

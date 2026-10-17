@@ -138,6 +138,15 @@ function hideNewDispatchesPill() {
   if (container) container.style.display = 'none';
 }
 
+function scrollFeedToTop(smooth = true) {
+  const centerFeed = document.querySelector('.social-center-feed');
+  const behavior = smooth ? 'smooth' : 'instant';
+  if (centerFeed && centerFeed.scrollTop > 0) {
+    centerFeed.scrollTo({ top: 0, behavior });
+  }
+  window.scrollTo({ top: 0, behavior });
+}
+
 const pillBtn = document.getElementById('btn-new-dispatches');
 if (pillBtn) {
   pillBtn.addEventListener('click', () => {
@@ -152,7 +161,7 @@ if (pillBtn) {
       incrementPostsTodayCounter();
     });
 
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    scrollFeedToTop(true);
   });
 }
 
@@ -383,6 +392,10 @@ async function loadPosts() {
     const returnState = restoreFeedReturnState();
     if (returnState && returnState.scrollY) {
       setTimeout(() => {
+        const centerFeed = document.querySelector('.social-center-feed');
+        if (centerFeed) {
+          centerFeed.scrollTop = returnState.scrollY;
+        }
         window.scrollTo({ top: returnState.scrollY, behavior: 'instant' });
       }, 50);
     }
@@ -526,7 +539,7 @@ async function showPostDetail(postId) {
         if (commSec) commSec.scrollIntoView({ behavior: 'smooth' });
       }, 100);
     } else {
-      window.scrollTo({ top: 0, behavior: 'instant' });
+      scrollFeedToTop(false);
     }
 
     // Render agency widget in right rail
@@ -615,6 +628,10 @@ function returnToStream() {
     }
     if (returnState.scrollY) {
       setTimeout(() => {
+        const centerFeed = document.querySelector('.social-center-feed');
+        if (centerFeed) {
+          centerFeed.scrollTop = returnState.scrollY;
+        }
         window.scrollTo({ top: returnState.scrollY, behavior: 'instant' });
       }, 50);
     }
@@ -1034,8 +1051,9 @@ document.addEventListener('nova:post:created', (e) => {
     updateRecentDispatchesWidget(post);
     updateProfilePostCount();
 
-    if (window.scrollY > 80) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    const centerFeed = document.querySelector('.social-center-feed');
+    if ((centerFeed && centerFeed.scrollTop > 80) || window.scrollY > 80) {
+      scrollFeedToTop(true);
     }
 
     if (typeof UI !== 'undefined' && UI.toast) {
@@ -1064,7 +1082,7 @@ document.addEventListener('nova:post:created', (e) => {
 
           updateActiveFilterUI();
           renderFilteredPosts();
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+          scrollFeedToTop(true);
 
           setTimeout(() => {
             const card = document.getElementById(`post-${post.id}`);

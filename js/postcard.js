@@ -55,8 +55,11 @@ export function makeExcerpt(body, maxChars = 220) {
 // Save feed return state before navigating into /post/<id>
 export function saveFeedReturnState() {
   try {
+    const centerFeed = document.querySelector('.social-center-feed');
+    const feedScroll = centerFeed ? centerFeed.scrollTop : 0;
+    const winScroll = window.scrollY || document.documentElement.scrollTop || 0;
     const state = {
-      scrollY: window.scrollY || document.documentElement.scrollTop || 0,
+      scrollY: feedScroll > 0 ? feedScroll : winScroll,
       layout: localStorage.getItem('nova_stream_layout') || 'grid',
       filters: window.feedState ? window.feedState.activeFilters : null,
       fromUrl: window.location.pathname + window.location.search,

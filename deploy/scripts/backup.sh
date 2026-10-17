@@ -14,8 +14,10 @@ if [[ -f /etc/nova/nova.env ]]; then
     source /etc/nova/nova.env
 fi
 
-DB_PATH="${NOVA_DB_PATH:-/opt/nova/data/nova.db}"
-if [[ ! -f "${DB_PATH}" && -f "/opt/nova/nova.db" ]]; then
+DB_PATH="${NOVA_DB_PATH:-/var/lib/nova/nova.db}"
+if [[ ! -f "${DB_PATH}" && -f "/opt/nova/data/nova.db" ]]; then
+    DB_PATH="/opt/nova/data/nova.db"
+elif [[ ! -f "${DB_PATH}" && -f "/opt/nova/nova.db" ]]; then
     DB_PATH="/opt/nova/nova.db"
 fi
 BUCKET_NAME="${S3_BUCKET:-}"
