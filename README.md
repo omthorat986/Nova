@@ -33,6 +33,7 @@
 - [⌨️ Keyboard Shortcuts & Navigation Guide](#️-keyboard-shortcuts--navigation-guide)
 - [💻 Quick Start & Running Locally](#-quick-start--running-locally)
 - [🧪 Automated Test Suite](#-automated-test-suite)
+- [Serverless Event Flow](#serverless-event-flow)
 - [📜 Scientific References & Citations](#-scientific-references--citations)
 
 ---
@@ -395,6 +396,10 @@ Data API Test: http://127.0.0.1:8000/data/timeline.js returned HTTP 200
 Data API Test: http://127.0.0.1:8000/data/resources.js returned HTTP 200
 All server tests passed!
 ```
+
+## Serverless Event Flow
+
+NOVA's S3 observation-manifest processor, offline tests, and AWS integration guide are in [`serverless/`](serverless/).
 
 ---
 
